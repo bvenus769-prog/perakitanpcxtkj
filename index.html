@@ -1,0 +1,2328 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/svg+xml" href="icon.svg">
+<link rel="apple-touch-icon" href="icon-192.png">
+<title>PerakitPC TJKT</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<meta name="theme-color" content="#1f4fd8">
+<meta name="description" content="Simulasi perakitan PC dan pengenalan komponen komputer untuk siswa SMK TJKT.">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@500&family=Space+Grotesk:wght@500;600;700&display=swap">
+<style>
+/* Konsep: lembar kerja teknisi. Kertas abu-biru dingin, tinta biru, papan PCB hijau sebagai satu-satunya area berwarna jenuh. */
+:root{
+  --bg:#edf0f5; --surface:#ffffff; --surface2:#f4f6fa; --fg:#0f1826; --muted:#586477; --line:#d3d9e3;
+  --accent:#1f4fd8; --accent-ink:#ffffff; --accent-soft:#e4ebff; --accent-a:rgba(31,79,216,.14);
+  --ok:#0e7447; --ok-soft:#ddf4e7; --warn:#97580a; --warn-soft:#fff0d3; --bad:#b3261e; --bad-soft:#fde7e4;
+  --pcb:#2b7a5b; --pcb-trace:#58b894; --pcb-edge:#1c5740; --case-fill:#dde3ec; --case-line:#8793a6;
+  --mat:#c9d3e0; --slot:#101c2c; --slot-line:#3a4a63; --lbl:#e9f5ef; --lbl-out:#33425a;
+  --ram:#2f6bff; --ssd:#12333a; --cooler:#a8b3c4; --psu:#2d3748; --vga:#222c3c; --cable24:#d98a0b; --cable8:#6d4bd8; --cablefp:#e0457b;
+  --screen:#07111f; --screen-fg:#9df0c0;
+  --f-head:'Space Grotesk',system-ui,-apple-system,'Segoe UI',sans-serif;
+  --f-body:'Inter',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
+  --f-mono:'JetBrains Mono',ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#0b1119; --surface:#131b27; --surface2:#19232f; --fg:#e6ebf3; --muted:#92a0b4; --line:#273244;
+  --accent:#7a9dff; --accent-ink:#0a1020; --accent-soft:#1a2a52; --accent-a:rgba(122,157,255,.16);
+  --ok:#52d391; --ok-soft:#10301f; --warn:#f0b35a; --warn-soft:#352610; --bad:#ff8a80; --bad-soft:#3a1714;
+  --pcb:#1d5a43; --pcb-trace:#3f9a78; --pcb-edge:#123c2d; --case-fill:#1b2431; --case-line:#52627a;
+  --mat:#202c3b; --slot:#070d16; --slot-line:#42557a; --lbl:#cfe9dd; --lbl-out:#a8b6cb;
+  --ram:#5b8aff; --ssd:#0d2a30; --cooler:#6b778a; --psu:#0f1722; --vga:#0c121b; --cable24:#f0a62e; --cable8:#9a82ff; --cablefp:#ff6ea0;
+  --screen:#030a14; --screen-fg:#8cf0b8;
+  color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0b1119; --surface:#131b27; --surface2:#19232f; --fg:#e6ebf3; --muted:#92a0b4; --line:#273244;
+  --accent:#7a9dff; --accent-ink:#0a1020; --accent-soft:#1a2a52; --accent-a:rgba(122,157,255,.16);
+  --ok:#52d391; --ok-soft:#10301f; --warn:#f0b35a; --warn-soft:#352610; --bad:#ff8a80; --bad-soft:#3a1714;
+  --pcb:#1d5a43; --pcb-trace:#3f9a78; --pcb-edge:#123c2d; --case-fill:#1b2431; --case-line:#52627a;
+  --mat:#202c3b; --slot:#070d16; --slot-line:#42557a; --lbl:#cfe9dd; --lbl-out:#a8b6cb;
+  --ram:#5b8aff; --ssd:#0d2a30; --cooler:#6b778a; --psu:#0f1722; --vga:#0c121b; --cable24:#f0a62e; --cable8:#9a82ff; --cablefp:#ff6ea0;
+  --screen:#030a14; --screen-fg:#8cf0b8;
+  color-scheme:dark}
+
+body{background:var(--bg);color:var(--fg);font-family:var(--f-body);font-size:15px;line-height:1.55;
+  padding-block:0;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));
+  -webkit-text-size-adjust:100%}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:60;background:var(--surface)}
+*{box-sizing:border-box}
+h1,h2,h3,h4{font-family:var(--f-head);margin:0;letter-spacing:-.01em;text-wrap:balance}
+p{margin:0}
+button{font:inherit;color:inherit;cursor:pointer;background:none;border:0;padding:0;text-align:inherit}
+button:focus-visible,[tabindex]:focus-visible,input:focus-visible,summary:focus-visible{outline:3px solid var(--accent);outline-offset:2px;border-radius:6px}
+.ic{display:inline-block;flex:none;vertical-align:middle}
+.wrap{max-width:1240px;margin-inline:auto}
+.mono{font-family:var(--f-mono)}
+
+.hdr{position:sticky;top:env(safe-area-inset-top,0px);z-index:50;margin-inline:calc(-1*max(16px,env(safe-area-inset-left,0px)));padding-inline:max(16px,env(safe-area-inset-left,0px));background:var(--surface);border-bottom:1px solid var(--line)}
+.hdr-in{max-width:1240px;margin-inline:auto;display:flex;align-items:center;gap:12px;padding-block:10px;flex-wrap:wrap}
+.brand{display:flex;align-items:center;gap:10px;min-width:0;flex:1 1 220px}
+.logo{width:38px;height:38px;border-radius:9px;background:var(--accent);color:var(--accent-ink);display:grid;place-items:center;flex:none}
+.brand h1{font-size:18px;font-weight:700;line-height:1.15}
+.brand small{display:block;color:var(--muted);font-size:12px;line-height:1.3}
+.hdr-act{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:42px;padding:8px 14px;border-radius:9px;border:1px solid var(--line);background:var(--surface);font-weight:600;font-size:14px;transition:background .15s,border-color .15s}
+.btn:hover{background:var(--surface2);border-color:var(--case-line)}
+.btn.pri{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.btn.pri:hover{filter:brightness(1.08);background:var(--accent)}
+.btn.sm{min-height:36px;padding:5px 10px;font-size:13px}
+.btn.ghost{border-color:transparent;background:transparent}
+.btn[disabled]{opacity:.5;cursor:not-allowed}
+.pill{display:inline-flex;align-items:center;gap:6px;padding:3px 10px;border-radius:999px;font-size:12px;font-weight:600;border:1px solid var(--line);background:var(--surface2);color:var(--muted)}
+.pill.ok{background:var(--ok-soft);color:var(--ok);border-color:transparent}
+.pill.warn{background:var(--warn-soft);color:var(--warn);border-color:transparent}
+.pill.bad{background:var(--bad-soft);color:var(--bad);border-color:transparent}
+.pill.acc{background:var(--accent-soft);color:var(--accent);border-color:transparent}
+
+.tabs{display:flex;gap:4px;padding-top:14px;flex-wrap:wrap}
+.tab{display:inline-flex;align-items:center;gap:8px;min-height:46px;padding:10px 18px;border-radius:10px 10px 0 0;font-family:var(--f-head);font-weight:600;font-size:16px;color:var(--muted);border:1px solid transparent;border-bottom:0}
+.tab[aria-selected="true"]{background:var(--surface);color:var(--fg);border-color:var(--line);position:relative;box-shadow:0 1px 0 var(--surface)}
+.tab:hover{color:var(--fg)}
+.main{background:var(--surface);border:1px solid var(--line);border-radius:0 12px 12px 12px;padding:clamp(14px,2.4vw,26px);margin-bottom:28px}
+
+.sub{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:18px}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:10px;overflow:hidden;background:var(--surface2)}
+.seg button{padding:9px 14px;min-height:42px;font-weight:600;font-size:14px;color:var(--muted);display:inline-flex;align-items:center;gap:7px}
+.seg button[aria-pressed="true"]{background:var(--accent);color:var(--accent-ink)}
+.sec-h{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:14px}
+.sec-h h2{font-size:clamp(20px,3vw,26px)}
+.sec-h p{color:var(--muted);max-width:62ch;font-size:14px}
+.bar{height:8px;border-radius:99px;background:var(--surface2);border:1px solid var(--line);overflow:hidden;min-width:120px}
+.bar>i{display:block;height:100%;background:var(--accent);transition:width .3s}
+
+.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:12px}
+.hw{display:flex;flex-direction:column;gap:8px;padding:14px;border:1px solid var(--line);border-radius:12px;background:var(--surface);min-width:0;transition:border-color .15s,transform .15s}
+.hw:hover{border-color:var(--accent);transform:translateY(-2px)}
+.hw .top{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.hw .ico{width:44px;height:44px;border-radius:10px;background:var(--accent-soft);color:var(--accent);display:grid;place-items:center}
+.hw h3{font-size:16px;font-weight:600}
+.hw p{font-size:13.5px;color:var(--muted)}
+.hw .go{margin-top:auto;font-size:13px;font-weight:600;color:var(--accent);display:inline-flex;align-items:center;gap:6px}
+
+.modal-bg{position:fixed;inset:0;z-index:100;background:rgba(6,12,22,.62);display:flex;align-items:flex-end;justify-content:center;padding:0}
+.modal{background:var(--surface);color:var(--fg);width:min(760px,100%);max-height:92dvh;max-height:92vh;overflow:auto;border-radius:16px 16px 0 0;border:1px solid var(--line);padding:20px max(16px,env(safe-area-inset-left,0px)) calc(24px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-right,0px))}
+@media (min-width:700px){.modal-bg{align-items:center;padding:24px}.modal{border-radius:16px;padding:24px 26px}}
+.modal-h{display:flex;align-items:flex-start;gap:12px;justify-content:space-between;margin-bottom:14px}
+.modal-h h2{font-size:22px}
+.mico{width:52px;height:52px;border-radius:12px;background:var(--accent-soft);color:var(--accent);display:grid;place-items:center;flex:none}
+.modal h3{font-size:14px;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);margin:18px 0 8px;font-weight:600}
+.modal p,.modal li{font-size:15px}
+.modal ul{margin:0;padding-left:20px;display:grid;gap:6px}
+dl.spec{display:grid;grid-template-columns:minmax(0,170px) minmax(0,1fr);gap:0;margin:0;border:1px solid var(--line);border-radius:10px;overflow:hidden}
+dl.spec dt,dl.spec dd{margin:0;padding:8px 12px;font-size:14px;border-top:1px solid var(--line)}
+dl.spec dt:first-of-type,dl.spec dd:first-of-type{border-top:0}
+dl.spec dt{background:var(--surface2);font-weight:600}
+@media (max-width:520px){dl.spec{grid-template-columns:1fr}dl.spec dt{border-top:1px solid var(--line)}dl.spec dd{border-top:0}}
+.k3{margin-top:16px;border-radius:10px;background:var(--warn-soft);color:var(--fg);padding:12px 14px;border-left:4px solid var(--warn)}
+.k3 b{color:var(--warn);display:flex;align-items:center;gap:8px;margin-bottom:6px;font-family:var(--f-head)}
+.k3 ul{padding-left:18px}
+.link-sim{margin-top:16px;font-size:13.5px;color:var(--muted);display:flex;gap:8px;align-items:center}
+
+.phases{display:grid;gap:10px}
+.phase{border:1px solid var(--line);border-radius:12px;background:var(--surface);overflow:hidden}
+.phase>button{width:100%;display:flex;align-items:center;gap:12px;padding:14px;min-height:56px}
+.phase .num{width:34px;height:34px;border-radius:9px;background:var(--accent-soft);color:var(--accent);display:grid;place-items:center;font-family:var(--f-mono);font-weight:600;flex:none}
+.phase.done .num{background:var(--ok-soft);color:var(--ok)}
+.phase h3{font-size:16px;font-weight:600}
+.phase .meta{font-size:12.5px;color:var(--muted)}
+.phase .body{padding:0 14px 14px 14px;display:grid;gap:8px}
+.step{display:flex;gap:12px;align-items:flex-start;padding:10px 12px;border-radius:10px;background:var(--surface2);min-height:44px}
+.step input{width:20px;height:20px;margin-top:2px;accent-color:var(--accent);flex:none}
+.step label{display:block;cursor:pointer;min-width:0}
+.step b{display:block;font-size:14.5px}
+.step span{display:block;font-size:13.5px;color:var(--muted)}
+.step.on{opacity:.75}
+.step.on b{text-decoration:line-through;text-decoration-color:var(--muted)}
+
+.simbar{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between;margin-bottom:12px}
+.stats{display:flex;gap:8px;flex-wrap:wrap}
+.stat{display:flex;flex-direction:column;padding:6px 12px;border:1px solid var(--line);border-radius:10px;background:var(--surface2);min-width:84px}
+.stat small{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
+.stat b{font-family:var(--f-mono);font-size:17px;font-variant-numeric:tabular-nums}
+.simgrid{display:grid;gap:14px;grid-template-columns:minmax(0,1fr);grid-template-areas:"tray" "stage" "side"}
+@media (min-width:1000px){.simgrid{grid-template-columns:230px minmax(0,1fr) 280px;grid-template-areas:"tray stage side";align-items:start}}
+@media (min-width:700px) and (max-width:999px){.simgrid{grid-template-columns:210px minmax(0,1fr);grid-template-areas:"tray stage" "side side";align-items:start}}
+.panel{border:1px solid var(--line);border-radius:12px;background:var(--surface);padding:12px;min-width:0}
+.panel h3{font-size:13px;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);margin-bottom:10px;font-weight:600;display:flex;align-items:center;justify-content:space-between;gap:8px}
+.tray{grid-area:tray}.stage{grid-area:stage}.side{grid-area:side;display:grid;gap:12px}
+.k3list{display:grid;gap:6px;margin-bottom:12px}
+.k3b{display:flex;align-items:center;gap:10px;min-height:44px;padding:8px 10px;border-radius:9px;border:1px solid var(--line);background:var(--surface2);font-size:13.5px;font-weight:500;width:100%}
+.k3b[aria-pressed="true"]{background:var(--ok-soft);border-color:transparent;color:var(--ok)}
+.k3b .bx{width:20px;height:20px;border-radius:5px;border:2px solid var(--case-line);display:grid;place-items:center;flex:none}
+.k3b[aria-pressed="true"] .bx{background:var(--ok);border-color:var(--ok);color:var(--surface)}
+.chips{display:grid;gap:6px}
+@media (max-width:699px){.chips{display:flex;overflow-x:auto;padding-bottom:6px;scroll-snap-type:x proximity;margin-inline:-2px;padding-inline:2px}.chips>*{scroll-snap-align:start}}
+.chip{display:flex;align-items:center;gap:10px;min-height:46px;padding:7px 10px;border-radius:10px;border:1px solid var(--line);background:var(--surface);font-size:13.5px;font-weight:600;width:100%;position:relative;transition:border-color .12s,background .12s}
+@media (max-width:699px){.chip{width:auto;flex:none;white-space:nowrap}}
+.chip:hover{border-color:var(--accent)}
+.chip .ico{width:30px;height:30px;border-radius:8px;background:var(--accent-soft);color:var(--accent);display:grid;place-items:center;flex:none}
+.chip small{display:block;font-weight:400;color:var(--muted);font-size:11.5px;line-height:1.2}
+.chip[aria-pressed="true"]{border-color:var(--accent);background:var(--accent-soft);box-shadow:0 0 0 2px var(--accent)}
+.chip.used{opacity:.55;background:var(--surface2)}
+.chip.used .ico{background:var(--ok-soft);color:var(--ok)}
+.chip.next::after{content:"";position:absolute;top:6px;right:8px;width:9px;height:9px;border-radius:50%;background:var(--accent);animation:blink 1.1s infinite}
+@keyframes blink{50%{opacity:.25}}
+
+.fb{display:flex;gap:10px;padding:10px 12px;border-radius:10px;margin-bottom:10px;font-size:14px;border-left:4px solid var(--line);background:var(--surface2);min-height:58px}
+.fb b{display:block;font-family:var(--f-head);font-size:14.5px;margin-bottom:1px}
+.fb.ok{background:var(--ok-soft);border-color:var(--ok)}.fb.ok .ic{color:var(--ok)}
+.fb.err{background:var(--bad-soft);border-color:var(--bad)}.fb.err .ic{color:var(--bad)}
+.fb.warn{background:var(--warn-soft);border-color:var(--warn)}.fb.warn .ic{color:var(--warn)}
+.fb.info{background:var(--accent-soft);border-color:var(--accent)}.fb.info .ic{color:var(--accent)}
+.view3d{position:relative;width:100%;height:clamp(360px,64vh,660px);border-radius:12px;overflow:hidden;background:var(--surface2);border:1px solid var(--line)}
+.view3dwrap{position:relative}
+.camover{position:absolute;left:8px;top:8px;display:flex;gap:6px;flex-wrap:wrap;max-width:calc(100% - 16px);z-index:2}
+.cbtn{display:inline-flex;align-items:center;gap:6px;min-height:36px;padding:6px 10px;border-radius:9px;border:1px solid var(--line);background:var(--surface);color:var(--fg);font-size:12.5px;font-weight:600;opacity:.94}
+.cbtn:hover{border-color:var(--accent)}
+.cbtn.pri{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.padover{position:absolute;left:8px;bottom:8px;display:grid;gap:6px;justify-items:start;z-index:2}
+.padover .seg button{min-height:34px;padding:6px 10px;font-size:12.5px;background:var(--surface)}
+.padover .seg button[aria-pressed="true"]{background:var(--accent);color:var(--accent-ink)}
+.dpad{display:grid;grid-template-columns:repeat(3,38px);grid-template-rows:repeat(2,38px);gap:4px}
+.dpad .cbtn{padding:0;justify-content:center;min-height:38px;width:38px}
+.dpad .up{grid-column:2;grid-row:1}.dpad .lf{grid-column:1;grid-row:2}.dpad .dn{grid-column:2;grid-row:2}.dpad .rt{grid-column:3;grid-row:2}
+.r90{transform:rotate(90deg)}.r180{transform:rotate(180deg)}.r270{transform:rotate(270deg)}
+.stepl{list-style:none;margin:0;padding:0;display:grid;gap:3px;font-size:12.5px}
+.stepl li{display:flex;align-items:center;gap:8px;padding:4px 6px;border-radius:7px;color:var(--muted)}
+.stepl li.d{color:var(--ok)}
+.stepl li.c{background:var(--accent-soft);color:var(--fg);font-weight:600}
+.stepl .sn{width:20px;height:20px;border-radius:50%;border:1px solid var(--line);display:grid;place-items:center;font-size:11px;font-family:var(--f-mono);flex:none}
+.stepl li.d .sn{background:var(--ok-soft);border-color:transparent}
+.stepl li.c .sn{background:var(--accent);color:var(--accent-ink);border-color:transparent}
+.errl{list-style:none;margin:8px 0 0;padding:0;display:grid;gap:6px;font-size:13px}
+.errl li{background:var(--surface);border-radius:8px;padding:8px 10px;border-left:3px solid var(--bad)}
+.errl b{display:block;font-size:13px}.errl small{color:var(--muted);display:block}
+.camrow{display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-bottom:8px}
+.camrow>span{font-size:12.5px;color:var(--muted);margin-right:2px}
+.tip3d{font-size:12.5px;color:var(--muted);margin-top:8px;display:flex;gap:8px;align-items:flex-start}
+.board-wrap{overflow-x:auto;border:1px solid var(--line);border-radius:12px;background:var(--surface2)}
+svg.board{display:block;width:100%;min-width:540px;height:auto;touch-action:manipulation;user-select:none;-webkit-user-select:none}
+.board .deco{pointer-events:none}
+.board .lbl{font-family:var(--f-mono);font-size:12px;fill:var(--lbl);pointer-events:none}
+.board .lbl.out{fill:var(--lbl-out)}
+.board .lbl.big{font-size:14px;font-weight:600}
+.board .tgt{cursor:pointer}
+.board .hit{fill:transparent}
+.board .ring{fill:none;stroke:transparent;stroke-width:2.5;rx:6}
+.board .armed .ring{stroke:var(--accent);stroke-opacity:.45;stroke-dasharray:5 4}
+.board .tgt:hover .ring{stroke:var(--accent);stroke-opacity:1;stroke-dasharray:none;fill:var(--accent-a)}
+.board .tgt:focus-visible .ring{stroke:var(--accent);stroke-opacity:1;stroke-dasharray:none}
+.board .tgt.glow .ring{stroke:var(--accent);stroke-opacity:1;stroke-dasharray:none;fill:var(--accent-a);animation:pulse 1.1s ease-in-out infinite}
+@keyframes pulse{50%{stroke-width:5;fill:transparent}}
+.board .tgt.hidden{display:none}
+.spin{transform-box:fill-box;transform-origin:center;animation:spin .55s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* ===== Tampilan layar HP ===== */
+@media (max-width:699px){
+  body{padding-left:max(10px,env(safe-area-inset-left,0px));padding-right:max(10px,env(safe-area-inset-right,0px))}
+  .hdr{position:static;margin-inline:calc(-1*max(10px,env(safe-area-inset-left,0px)));padding-inline:max(10px,env(safe-area-inset-left,0px))}
+  .hdr-in{padding-block:8px;gap:8px}
+  .brand{flex:1 1 auto}.brand small{display:none}.brand h1{font-size:16px}.logo{width:32px;height:32px;border-radius:8px}
+  .hdr-act{gap:6px;flex:1 1 100%;justify-content:space-between;flex-wrap:nowrap}
+  .hdr-act .btn{min-height:38px;padding:6px 10px;font-size:13px}
+  .tabs{padding-top:8px;gap:3px;flex-wrap:nowrap}
+  .tab{flex:1 1 0;justify-content:center;padding:9px 8px;min-height:44px;font-size:14px;gap:6px;text-align:center}
+  .main{padding:10px;margin-bottom:16px;border-radius:0 0 12px 12px}
+  .simbar{gap:8px}
+  .simbar .seg{width:100%}.simbar .seg button{flex:1 1 0;justify-content:center}
+  .stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;width:100%}
+  .stat{min-width:0;padding:5px 6px}.stat small{font-size:9.5px;letter-spacing:.02em;line-height:1.15}.stat b{font-size:15px}
+  .simbar>div:last-child{width:100%}.simbar>div:last-child .btn:last-child{flex:1}
+  .simgrid{gap:10px;grid-template-areas:"stage" "tray" "side"}
+  .panel{padding:10px;border-radius:10px}
+  .view3d{height:clamp(320px,58vh,520px)}
+  .camover{left:6px;top:6px;max-width:calc(100% - 12px);gap:5px;flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none}
+  .camover::-webkit-scrollbar{display:none}
+  .cbtn{min-height:40px;min-width:40px;padding:6px 9px;justify-content:center;flex:none}
+  .cbtn .lb{display:none}
+  .padover{left:6px;bottom:6px}
+  .padover .seg button{min-height:38px}
+  .camrow{gap:5px}.camrow>span{flex:1 1 100%}
+  .tip3d{font-size:12px}
+  .fb{font-size:13.5px}
+  .chip{min-height:50px}
+}
+@media (max-width:380px){.tab .ic{display:none}.stat small{font-size:9px}}
+
+/* ===== Layar penuh praktik ===== */
+.fsbtn{display:none;width:100%;margin-bottom:8px}
+@media (max-width:899px){.fsbtn{display:inline-flex}}
+.fsbar{position:absolute;right:8px;top:8px;display:flex;gap:6px;z-index:3}
+.fsbar .cbtn{min-width:44px;min-height:44px;justify-content:center;padding:6px 10px;position:relative}
+.fsbar .cbtn.pwr.rdy{background:var(--ok);border-color:var(--ok);color:var(--accent-ink)}
+.fsbar .cbtn.warnb{border-color:var(--warn)}
+.fsbar .bdg{font-family:var(--f-mono);font-size:11px;font-weight:700}
+.fsk3{position:absolute;right:8px;top:60px;z-index:4;width:min(280px,calc(100% - 16px));display:grid;gap:6px;padding:10px;border-radius:12px;background:var(--surface);border:1px solid var(--line);box-shadow:0 8px 24px rgba(0,0,0,.3)}
+.fstoast{position:absolute;left:50%;bottom:calc(14px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);z-index:4;max-width:calc(100% - 24px);padding:8px 14px;border-radius:999px;font-size:13px;font-weight:600;background:var(--surface);color:var(--fg);border:1px solid var(--line);box-shadow:0 4px 16px rgba(0,0,0,.3);text-align:center;pointer-events:none}
+.fstoast.err{background:var(--bad-soft);color:var(--bad);border-color:var(--bad)}.fstoast.ok{background:var(--ok-soft);color:var(--ok);border-color:var(--ok)}.fstoast.warn{background:var(--warn-soft);color:var(--warn);border-color:var(--warn)}
+.panel.stage.fs{position:fixed;inset:0;z-index:100;margin:0;padding:0;border:0;border-radius:0;background:var(--bg);overflow:hidden}
+.stage.fs>.fb,.stage.fs .fsbtn,.stage.fs .camrow,.stage.fs .tip3d,.stage.fs .tgtbar,.stage.fs .powerrow{display:none!important}
+.stage.fs .view3d{height:100vh;height:100dvh;border:0;border-radius:0}
+.stage.fs .camover{top:calc(8px + env(safe-area-inset-top,0px));left:calc(8px + env(safe-area-inset-left,0px));flex-direction:column;flex-wrap:nowrap;overflow:visible;max-width:none}
+.stage.fs .camover .cbtn{min-width:44px;min-height:44px}
+.stage.fs .fsbar{top:calc(8px + env(safe-area-inset-top,0px));right:calc(8px + env(safe-area-inset-right,0px))}
+.stage.fs .fsk3{top:calc(64px + env(safe-area-inset-top,0px))}
+.stage.fs .cbtn .lb{display:none}
+@media (prefers-reduced-motion:reduce){.spin{animation-duration:3s}.chip.next::after,.board .tgt.glow .ring{animation:none}.hw{transition:none}}
+.led{transition:fill .2s}
+.tgtbar{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px;align-items:center}
+.tgtbar>span{font-size:12.5px;color:var(--muted);margin-right:4px}
+.tg{padding:6px 10px;border-radius:99px;border:1px solid var(--line);background:var(--surface);font-size:12.5px;font-weight:500;min-height:34px}
+.tg:hover{border-color:var(--accent)}
+.tg.on{background:var(--accent-soft);border-color:var(--accent);color:var(--accent)}
+.powerrow{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-top:12px}
+.powerbtn{min-height:50px;padding-inline:20px;font-size:15px}
+.powerbtn.ready{background:var(--ok);border-color:var(--ok);color:var(--surface)}
+
+.next-box{border-radius:10px;background:var(--accent-soft);padding:10px 12px;font-size:14px}
+.next-box b{display:flex;gap:8px;align-items:center;color:var(--accent);margin-bottom:3px;font-family:var(--f-head)}
+.monitor{border-radius:10px;background:#1c2431;padding:10px;border:1px solid var(--line)}
+.screen{background:var(--screen);color:var(--screen-fg);font-family:var(--f-mono);font-size:12px;line-height:1.5;padding:12px;border-radius:5px;min-height:170px;overflow:hidden;word-break:break-word}
+.screen .dim{opacity:.6}
+.screen .okl{color:#fff;font-weight:600}
+.screen .row{animation:fadein .4s both}
+@keyframes fadein{from{opacity:0;transform:translateY(3px)}}
+.result{border:2px solid var(--ok);border-radius:12px;padding:14px;background:var(--ok-soft)}
+.result.fail{border-color:var(--bad);background:var(--bad-soft)}
+.result h3{font-size:18px;text-transform:none;letter-spacing:0;color:var(--fg);margin-bottom:8px;display:block}
+.score{font-family:var(--f-mono);font-size:44px;font-weight:700;line-height:1}
+.fld{display:grid;gap:4px;margin-top:10px;font-size:13px;font-weight:600}
+.fld input{font:inherit;font-weight:400;padding:10px 12px;border-radius:9px;border:1px solid var(--line);background:var(--surface);color:var(--fg);min-height:44px;width:100%}
+.kv{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}
+.kv div{background:var(--surface);border-radius:8px;padding:6px 10px;font-size:13px}
+.kv b{display:block;font-family:var(--f-mono);font-size:16px}
+.tbl{overflow-x:auto;border:1px solid var(--line);border-radius:10px}
+table{border-collapse:collapse;width:100%;font-size:13.5px;min-width:560px}
+th,td{padding:9px 12px;text-align:left;border-bottom:1px solid var(--line);white-space:nowrap;font-variant-numeric:tabular-nums}
+th{background:var(--surface2);font-size:12px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted)}
+tr:last-child td{border-bottom:0}
+.empty{padding:18px;text-align:center;color:var(--muted);font-size:14px}
+.fpgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:8px}
+.sock{border:2px dashed var(--case-line);border-radius:10px;padding:10px 8px;min-height:104px;display:flex;flex-direction:column;align-items:center;gap:8px;background:var(--surface2);width:100%}
+.sock:hover{border-color:var(--accent)}
+.sock .pins{display:flex;gap:6px}
+.sock .pin{width:14px;height:14px;border-radius:3px;background:var(--slot);border:1px solid var(--slot-line)}
+.sock.on{border-style:solid;border-color:var(--ok);background:var(--ok-soft)}
+.sock .sl{font-family:var(--f-mono);font-size:12px;font-weight:600;text-align:center}
+.cab{display:inline-flex;align-items:center;gap:8px;padding:8px 12px;border-radius:99px;border:1px solid var(--line);background:var(--surface);font-family:var(--f-mono);font-size:12.5px;font-weight:600;min-height:42px}
+.cab i{width:14px;height:14px;border-radius:50%;display:block}
+.cab[aria-pressed="true"]{box-shadow:0 0 0 2px var(--accent);border-color:var(--accent)}
+.cab.used{opacity:.4}
+.shake{animation:shake .35s}
+@keyframes shake{25%{transform:translateX(-5px)}75%{transform:translateX(5px)}}
+.guide ol{margin:0;padding-left:20px;display:grid;gap:5px;font-size:14.5px}
+.guide h4{font-size:15px;margin:14px 0 6px}
+.foot{padding:4px 0 36px;color:var(--muted);font-size:12.5px;text-align:center}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+</style>
+
+</head>
+<body>
+
+<script src="https://cdn.tailwindcss.com/3.4.17"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.3.1/umd/react.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.3.1/umd/react-dom.production.min.js"></script>
+<script src="https://unpkg.com/htm@3.1.1/dist/htm.umd.js"></script>
+
+<div id="root"><p style="padding:24px;font-family:system-ui">Memuat aplikasi PerakitPC TJKT...</p></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+
+<script id="logic">
+(function(){
+'use strict';
+var LS={
+  get:function(k,d){try{var v=localStorage.getItem(k);return v==null?d:JSON.parse(v)}catch(e){return d}},
+  set:function(k,v){try{localStorage.setItem(k,JSON.stringify(v));return true}catch(e){return false}}
+};
+
+/* ---------- Definisi komponen & target simulasi ---------- */
+var ITEMS={
+  mobo:{nama:'Motherboard',sub:'Papan induk',ikon:'mobo',tujuan:'meja kerja (di luar casing), lalu bay motherboard di casing',
+    why:'Motherboard diletakkan dulu di atas alas anti-statis, lalu dipindahkan ke bay motherboard casing setelah komponen utamanya terpasang.'},
+  cpu:{nama:'Processor (CPU)',sub:'Otak komputer',ikon:'cpu',tujuan:'socket CPU',
+    why:'CPU memiliki pola kontak yang hanya cocok dengan socket CPU. Slot lain memiliki bentuk, jumlah pin, dan fungsi berbeda, sehingga CPU tidak akan muat atau malah merusak kontak jika dipaksa.'},
+  paste:{nama:'Thermal Paste',sub:'Pasta termal',ikon:'drop',tujuan:'permukaan CPU (area socket CPU)',
+    why:'Pasta termal dioleskan tipis di permukaan atas CPU (heatspreader), bukan di slot lain. Di tempat lain pasta justru bersifat mengotori dan berpotensi menghantarkan listrik.'},
+  cooler:{nama:'CPU Cooler',sub:'Heatsink + kipas',ikon:'fan',tujuan:'di atas CPU (area socket CPU)',
+    why:'Cooler harus menempel rata pada permukaan CPU supaya panas berpindah. Ia tidak dipasang di slot lain.'},
+  ram:{nama:'RAM DDR',sub:'Modul memori',ikon:'ram',tujuan:'slot DIMM',
+    why:'RAM hanya muat di slot DIMM (empat slot panjang di sisi kanan socket CPU). Lekukan (notch) pada modul RAM hanya cocok dengan satu orientasi di slot DIMM.'},
+  ssd:{nama:'SSD NVMe M.2',sub:'Penyimpanan cepat',ikon:'disk',tujuan:'slot M.2',
+    why:'SSD NVMe M.2 berbentuk stik pendek dan dipasang miring lalu ditekan di slot M.2, kemudian dikunci dengan satu sekrup kecil.'},
+  io:{nama:'I/O Shield',sub:'Pelat port belakang',ikon:'shield',tujuan:'lubang I/O di bagian belakang casing',
+    why:'I/O Shield adalah pelat logam tipis yang dipasang pada lubang port belakang casing.'},
+  psu:{nama:'Power Supply (PSU)',sub:'Catu daya',ikon:'zap',tujuan:'bay PSU di bagian bawah casing',
+    why:'PSU dipasang di bay PSU casing (umumnya di bawah) dengan empat sekrup, kipas menghadap lubang udara.'},
+  vga:{nama:'VGA Card / GPU',sub:'Kartu grafis',ikon:'gpu',tujuan:'slot PCIe x16',
+    why:'Kartu grafis memakai konektor PCIe x16 (slot terpanjang) yang punya pengunci di ujungnya.'},
+  c24:{nama:'Kabel 24-pin ATX',sub:'Daya motherboard',ikon:'plug',tujuan:'konektor 24-pin ATX di tepi kanan motherboard',
+    why:'Konektor 24-pin berbentuk persegi panjang dengan pengunci (clip). Setiap konektor daya hanya cocok dengan bentuk dan jumlah pin tertentu.'},
+  c8:{nama:'Kabel CPU 8-pin',sub:'Daya processor (EPS)',ikon:'plug',tujuan:'konektor CPU 8-pin (EPS) di tepi atas motherboard',
+    why:'Kabel EPS 8-pin menyalurkan daya khusus ke CPU dan dicolokkan ke konektor 4+4 pin di dekat socket CPU.'},
+  fp:{nama:'Kabel Front Panel',sub:'Tombol & LED casing',ikon:'cable',tujuan:'header Front Panel di tepi bawah motherboard',
+    why:'Kabel tombol dan lampu casing disambungkan ke header Front Panel (F_PANEL) di tepi bawah motherboard.'}
+};
+var ORDER=['mobo','cpu','paste','cooler','ram','ssd','io','psu','vga','c24','c8','fp'];
+var TARGETS={
+  bench:'Meja kerja', caseBay:'Casing (bay motherboard)', socket:'Socket CPU',
+  dimm0:'DIMM A1', dimm1:'DIMM A2', dimm2:'DIMM B1', dimm3:'DIMM B2',
+  m2:'Slot M.2', pcie:'Slot PCIe x16', io:'Lubang I/O casing', psuBay:'Bay PSU',
+  atx24:'Konektor 24-pin ATX', eps:'Konektor CPU 8-pin', fph:'Header Front Panel'
+};
+var FP={
+  PWR_SW:{sock:'PWR_BTN',fungsi:'tombol power',warna:'#e0457b'},
+  RESET_SW:{sock:'RESET',fungsi:'tombol reset',warna:'#d98a0b'},
+  HDD_LED:{sock:'HDD+ / HDD-',fungsi:'lampu aktivitas penyimpanan',warna:'#1f9d6b'},
+  PWR_LED:{sock:'PLED+ / PLED-',fungsi:'lampu indikator power',warna:'#2f6bff'}
+};
+function shuffle(a){a=a.slice();for(var i=a.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1));var t=a[i];a[i]=a[j];a[j]=t}return a}
+function newState(){
+  return {k3:{esd:false,mat:false,tool:false},mobo:'tray',cpu:false,paste:false,cooler:false,
+    ram:[false,false,false,false],ssd:false,io:false,psu:false,vga:false,c24:false,c8:false,fp:false,
+    fpOrder:shuffle(['PWR_SW','RESET_SW','HDD_LED','PWR_LED'])};
+}
+function ramCount(S){return S.ram.filter(Boolean).length}
+function k3ok(S){return S.k3.esd&&S.k3.mat&&S.k3.tool}
+function fail(title,msg){return {ok:false,title:title,msg:msg}}
+function ok(S,title,msg,extra){var r={ok:true,S:S,title:title,msg:msg};if(extra)for(var k in extra)r[k]=extra[k];return r}
+function upd(S,o){var n={};for(var k in S)n[k]=S[k];for(var k2 in o)n[k2]=o[k2];return n}
+
+/* ---------- Validasi urutan teknis ---------- */
+function attempt(S,item,target){
+  var it=ITEMS[item];
+  var wrongSlot=function(){return fail('Slot tidak sesuai',it.nama+' tidak dipasang di "'+TARGETS[target]+'". '+it.why+' Tempat yang benar: '+it.tujuan+'.')};
+  switch(item){
+    case 'mobo':
+      if(target==='bench'){
+        if(S.mobo!=='tray')return fail('Motherboard sudah di meja kerja','Motherboard sudah berada di atas alas kerja. Lanjutkan memasang komponen di atasnya.');
+        return ok(upd(S,{mobo:'bench'}),'Motherboard diletakkan','Motherboard ditaruh di atas alas anti-statis (bisa memakai kardus box motherboard). Jangan taruh langsung di atas meja logam. Lanjut: pasang CPU.');
+      }
+      if(target==='caseBay'){
+        if(S.mobo==='tray')return fail('Motherboard belum di meja kerja','Letakkan motherboard di meja kerja terlebih dahulu, lalu pasang CPU, pasta termal, cooler, RAM, dan SSD di luar casing.');
+        if(S.mobo==='case')return fail('Sudah di casing','Motherboard sudah terpasang di casing.');
+        var miss=[];if(!S.cpu)miss.push('CPU');if(!S.paste)miss.push('pasta termal');if(!S.cooler)miss.push('CPU cooler');if(ramCount(S)<1)miss.push('RAM');if(!S.ssd)miss.push('SSD NVMe');
+        if(miss.length)return fail('Urutan SOP terlewat','Komponen berikut belum dipasang di motherboard: '+miss.join(', ')+'. Sesuai SOP, komponen kecil dipasang di luar casing karena ruang kerja lebih luas, tidak terhalang rangka casing, dan risiko pin CPU bengkok atau motherboard tertekan lebih kecil.');
+        if(!S.io)return fail('I/O Shield belum dipasang','Pasang I/O Shield pada lubang belakang casing sebelum memasukkan motherboard. Jika motherboard sudah masuk, pelat ini tidak bisa dipasang karena terhalang konektor port, dan motherboard harus dibongkar lagi.');
+        return ok(upd(S,{mobo:'case'}),'Motherboard masuk casing','Motherboard diturunkan ke bay casing, dicocokkan ke standoff kuningan, lalu dikencangkan dengan sekrup secara bersilangan. Pastikan tidak ada standoff berlebih di bawah papan karena bisa menyebabkan korsleting.');
+      }
+      return fail('Target salah','Motherboard dipasang di '+it.tujuan+'. Slot yang kamu pilih ("'+TARGETS[target]+'") adalah bagian yang berada di atas motherboard, bukan tempat meletakkannya.');
+    case 'cpu':
+      if(target!=='socket')return wrongSlot();
+      if(S.mobo==='tray')return fail('Motherboard belum disiapkan','Letakkan motherboard di meja kerja dulu. CPU tidak boleh dipasang tanpa dudukan yang stabil karena pin socket mudah bengkok.');
+      if(S.cpu)return fail('CPU sudah terpasang','Socket sudah terisi CPU.');
+      return ok(upd(S,{cpu:true}),'CPU terpasang','Tuas socket diangkat, segitiga emas CPU disejajarkan dengan tanda segitiga pada socket, CPU diletakkan tanpa ditekan, lalu tuas dikunci. Jangan menyentuh pin atau kontak.');
+    case 'paste':
+      if(target!=='socket')return wrongSlot();
+      if(!S.cpu)return fail('CPU belum dipasang','Pasta termal dioleskan pada permukaan CPU. Jika socket masih kosong, pasta akan mengotori pin socket yang sangat halus dan bisa menyebabkan hubungan pendek.');
+      if(S.paste)return fail('Pasta sudah dioles','Pasta termal sudah ada. Pasta berlebih justru menjadi penghambat panas dan bisa meluber ke socket.');
+      if(S.cooler)return fail('Cooler sudah terpasang','Pasta termal harus dioles sebelum cooler dipasang.');
+      return ok(upd(S,{paste:true}),'Pasta termal dioles','Satu titik sebesar biji kacang polong di tengah CPU sudah cukup. Tekanan cooler akan menyebarkannya merata, mengisi celah mikroskopis antara CPU dan heatsink.');
+    case 'cooler':
+      if(target!=='socket')return wrongSlot();
+      if(!S.cpu)return fail('CPU belum dipasang','Cooler menutupi seluruh area socket. Bila dipasang lebih dulu, CPU tidak bisa dimasukkan lagi tanpa membongkar cooler.');
+      if(!S.paste)return fail('Pasta termal belum dioles','Tanpa pasta termal terdapat celah udara mikroskopis antara CPU dan heatsink. Udara penghantar panas yang buruk, sehingga CPU cepat panas, melambat (thermal throttling), dan bisa mati sendiri.');
+      if(S.cooler)return fail('Cooler sudah terpasang','Cooler sudah menempel pada CPU.');
+      return ok(upd(S,{cooler:true}),'CPU cooler terpasang','Cooler dikencangkan bertahap secara bersilangan agar tekanannya merata. Kabel kipas dicolokkan ke header CPU_FAN supaya kecepatan kipas terbaca BIOS.');
+    case 'ram':
+      if(target.indexOf('dimm')!==0)return wrongSlot();
+      if(S.mobo==='tray')return fail('Motherboard belum disiapkan','Letakkan motherboard di meja kerja dulu agar tekanan saat memasang RAM tidak membuat papan melengkung.');
+      var idx=parseInt(target.slice(4),10);
+      if(S.ram[idx])return fail('Slot sudah terisi','Slot '+TARGETS[target]+' sudah terisi modul RAM.');
+      var cnt=ramCount(S);
+      if(cnt>=2)return fail('Cukup dua modul','Simulasi ini memakai maksimal dua modul RAM untuk konfigurasi Dual Channel.');
+      if(cnt===0&&idx!==1)return fail('Slot prioritas salah','Jika hanya satu modul, manual motherboard umumnya meminta pemasangan di slot A2 (slot kedua dari socket CPU), bukan di '+TARGETS[target]+'. Slot ini adalah jalur utama yang diprioritaskan BIOS saat POST.');
+      if(cnt===1&&idx!==3)return fail('Bukan pasangan Dual Channel','Agar aktif Dual Channel, modul kedua dipasang di slot B2 (slot keempat), berpasangan dengan A2. Memasang di slot sebelahnya membuat kedua modul berada di satu kanal sehingga bandwidth tidak berlipat.');
+      var r2=S.ram.slice();r2[idx]=true;
+      return ok(upd(S,{ram:r2}),cnt===0?'RAM terpasang di A2':'Dual Channel aktif','Modul diposisikan sehingga lekukan (notch) sejajar dengan sekat slot, lalu ditekan merata sampai kedua klip pengunci berbunyi klik.'+(cnt===0?' RAM kedua (opsional) dipasang di B2 untuk Dual Channel.':' Kecepatan memori kini berlipat karena dua kanal bekerja bersamaan.'));
+    case 'ssd':
+      if(target!=='m2')return wrongSlot();
+      if(S.mobo==='tray')return fail('Motherboard belum disiapkan','Letakkan motherboard di meja kerja dulu sebelum memasang SSD.');
+      if(S.ssd)return fail('Slot M.2 terisi','SSD NVMe sudah terpasang.');
+      if(S.vga)return fail('Slot M.2 tertutup VGA','Pada banyak motherboard, slot M.2 berada tepat di bawah kartu grafis. Pasang SSD sebelum VGA, karena setelah VGA terpasang slotnya tertutup dan sekrup kecilnya sulit dijangkau.');
+      return ok(upd(S,{ssd:true}),'SSD NVMe terpasang','SSD dimasukkan miring sekitar 30 derajat, ditekan rata, lalu dikunci dengan sekrup M.2. Lepas lapisan plastik pada thermal pad heatsink M.2 jika ada.');
+    case 'io':
+      if(target!=='io')return wrongSlot();
+      if(S.io)return fail('I/O Shield sudah terpasang','Pelat I/O sudah terpasang di lubang belakang casing.');
+      if(S.mobo==='case')return fail('Motherboard sudah di casing','I/O Shield dipasang dari sisi dalam sebelum motherboard masuk. Setelah motherboard terpasang, port-nya menghalangi pelat sehingga kamu harus membongkar lagi.');
+      return ok(upd(S,{io:true}),'I/O Shield terpasang','Tekan pelat dari dalam casing hingga keempat sisinya klik. Cocokkan lubang pelat dengan susunan port di motherboard sebelum memasukkan motherboard.');
+    case 'psu':
+      if(target!=='psuBay')return wrongSlot();
+      if(S.psu)return fail('PSU sudah terpasang','PSU sudah berada di bay-nya.');
+      return ok(upd(S,{psu:true}),'PSU terpasang','PSU dikunci dengan empat sekrup. Pastikan saklar PSU berada pada posisi OFF dan kabel AC belum dicolok. Kipas PSU menghadap lubang udara casing.'+(S.mobo==='case'?'':' PSU boleh dipasang lebih dulu pada casing yang ruangnya lega, tetapi hati-hati agar kabelnya tidak menghalangi saat memasang motherboard.'));
+    case 'vga':
+      if(target!=='pcie')return wrongSlot();
+      if(S.mobo!=='case')return fail('Motherboard belum di casing','VGA dipasang setelah motherboard terpasang di casing. Bracket logam VGA dikunci ke lubang slot casing dan kartu yang berat membutuhkan penopang rangka. Kartu yang dipasang di meja kerja bisa membengkokkan motherboard.');
+      if(!S.ssd)return fail('SSD M.2 belum terpasang','Slot M.2 berada di bawah kartu grafis. Pasang SSD lebih dulu sebelum VGA menutupinya.');
+      if(S.vga)return fail('VGA sudah terpasang','Slot PCIe x16 sudah terisi.');
+      return ok(upd(S,{vga:true}),'VGA terpasang','Lepas penutup slot casing, tekan VGA lurus ke bawah sampai pengunci slot klik, lalu kencangkan bracket dengan sekrup. Daya tambahan PCIe dari PSU disambung terpisah sesuai kebutuhan kartu.');
+    case 'c24':
+      if(target!=='atx24')return wrongSlot();
+      if(!S.psu)return fail('PSU belum terpasang','Kabel 24-pin berasal dari PSU. Tanpa PSU tidak ada sumber daya yang bisa disambungkan.');
+      if(S.c24)return fail('Sudah terpasang','Kabel 24-pin sudah tersambung.');
+      return ok(upd(S,{c24:true}),'Kabel 24-pin terpasang','Konektor ditekan sampai klip pengunci mengunci. Kabel ini memberi daya utama 3,3V, 5V, dan 12V ke motherboard.');
+    case 'c8':
+      if(target!=='eps')return wrongSlot();
+      if(!S.psu)return fail('PSU belum terpasang','Kabel CPU 8-pin berasal dari PSU, jadi PSU harus terpasang lebih dulu.');
+      if(S.c8)return fail('Sudah terpasang','Kabel CPU sudah tersambung.');
+      return ok(upd(S,{c8:true}),'Kabel CPU 8-pin terpasang','Konektor EPS ditekan sampai klik. Jangan tertukar dengan kabel PCIe 8-pin milik VGA, karena bentuk pinnya mirip tetapi pengkabelannya berbeda.');
+    case 'fp':
+      if(target!=='fph')return wrongSlot();
+      if(S.mobo!=='case')return fail('Motherboard belum di casing','Kabel tombol dan lampu berasal dari bagian depan casing, jadi motherboard harus terpasang di casing lebih dulu.');
+      if(S.fp)return fail('Sudah terpasang','Header Front Panel sudah terisi kabel.');
+      return {ok:true,S:S,openFP:true,title:'Pasang kabel Front Panel',msg:'Cocokkan setiap kabel ke pin header sesuai label (silkscreen) pada motherboard.'};
+  }
+  return fail('Tidak dikenali','Aksi tidak dikenali.');
+}
+
+function isComplete(S){return S.mobo==='case'&&S.cpu&&S.paste&&S.cooler&&ramCount(S)>=1&&S.ssd&&S.io&&S.psu&&S.vga&&S.c24&&S.c8&&S.fp}
+
+function power(S){
+  if(S.mobo!=='case')return fail('Rakitan belum lengkap','Motherboard belum terpasang di casing sehingga tombol power casing tidak terhubung ke motherboard. Menyalakan papan di luar casing berisiko korsleting.');
+  if(!S.psu)return fail('Tidak ada sumber daya','PSU belum terpasang. Tanpa catu daya, tidak ada listrik yang mengalir ke komponen manapun.');
+  if(!S.c24)return fail('Motherboard tidak mendapat daya','Kabel 24-pin ATX belum terpasang. Tombol power hanya mengirim sinyal ke motherboard; tanpa daya standby dan daya utama dari kabel 24-pin, motherboard tidak merespons sama sekali.');
+  if(!S.fp)return fail('Tombol power belum terhubung','Header Front Panel belum tersambung, jadi sinyal PWR_SW dari tombol casing tidak sampai ke motherboard. Teknisi biasanya menyalakan dengan menyentuh pin PWR_SW memakai obeng hanya untuk pengujian, bukan solusi akhir.');
+  if(!S.c8)return fail('CPU tidak mendapat daya','Kabel CPU 8-pin (EPS) belum terpasang. Prosesor memerlukan jalur 12V khusus, tanpa itu sistem tidak mau menyala atau mati beberapa detik setelah hidup.');
+  if(!S.vga)return fail('Tidak ada output video','VGA belum terpasang sehingga layar tidak mendapat sinyal. Komputer bisa saja menyala, tetapi POST menghasilkan bunyi beep error dan layar kosong.');
+  if(!isComplete(S))return fail('Rakitan belum lengkap','Masih ada komponen wajib yang belum terpasang.');
+  return {ok:true,dual:ramCount(S)===2};
+}
+
+function goodTarget(S,item){
+  switch(item){
+    case 'mobo':return S.mobo==='tray'?'bench':'caseBay';
+    case 'cpu':case 'paste':case 'cooler':return 'socket';
+    case 'ram':return ramCount(S)===0?'dimm1':'dimm3';
+    case 'ssd':return 'm2';case 'io':return 'io';case 'psu':return 'psuBay';case 'vga':return 'pcie';
+    case 'c24':return 'atx24';case 'c8':return 'eps';case 'fp':return 'fph';
+  }
+  return null;
+}
+function itemDone(S,item){
+  switch(item){
+    case 'mobo':return S.mobo==='case';
+    case 'ram':return ramCount(S)>=2;
+    default:return !!S[item];
+  }
+}
+function nextStep(S){
+  if(!k3ok(S))return {item:null,text:'Lengkapi checklist K3LH: pakai gelang anti-statis, siapkan alas non-konduktif, dan siapkan obeng magnetik.'};
+  if(S.mobo==='tray')return {item:'mobo',text:'Pilih Motherboard, lalu ketuk Meja kerja untuk meletakkannya di atas alas anti-statis.'};
+  if(!S.cpu)return {item:'cpu',text:'Pilih Processor, lalu ketuk Socket CPU.'};
+  if(!S.paste)return {item:'paste',text:'Pilih Thermal Paste, lalu ketuk CPU di socket.'};
+  if(!S.cooler)return {item:'cooler',text:'Pilih CPU Cooler, lalu ketuk area CPU.'};
+  if(ramCount(S)<1)return {item:'ram',text:'Pilih RAM, lalu ketuk slot DIMM A2 (slot kedua dari CPU).'};
+  if(!S.ssd)return {item:'ssd',text:'Pilih SSD NVMe M.2, lalu ketuk Slot M.2.'};
+  if(!S.io)return {item:'io',text:'Pilih I/O Shield, lalu ketuk lubang I/O di belakang casing.'};
+  if(S.mobo!=='case')return {item:'mobo',text:'Pilih Motherboard lagi, lalu ketuk area casing untuk memindahkannya ke bay motherboard.'};
+  if(!S.psu)return {item:'psu',text:'Pilih Power Supply, lalu ketuk Bay PSU di bawah casing.'};
+  if(!S.vga)return {item:'vga',text:'Pilih VGA Card, lalu ketuk Slot PCIe x16.'};
+  if(!S.c24)return {item:'c24',text:'Pilih Kabel 24-pin ATX, lalu ketuk konektor 24-pin motherboard.'};
+  if(!S.c8)return {item:'c8',text:'Pilih Kabel CPU 8-pin, lalu ketuk konektor 8-pin di dekat CPU.'};
+  if(!S.fp)return {item:'fp',text:'Pilih Kabel Front Panel, lalu ketuk header Front Panel dan cocokkan keempat kabelnya.'};
+  return {item:null,text:'Semua komponen terpasang. Periksa kabel, lalu tekan tombol power untuk uji nyala (POST).'};
+}
+
+/* ---------- PWA ---------- */
+var PWA={deferred:null,installed:false,sw:'menunggu',listeners:[]};
+PWA.on=function(f){PWA.listeners.push(f)};
+PWA.emit=function(){PWA.listeners.forEach(function(f){try{f()}catch(e){}})};
+PWA.standalone=function(){try{return (window.matchMedia&&matchMedia('(display-mode: standalone)').matches)||window.navigator.standalone===true}catch(e){return false}};
+window.addEventListener('beforeinstallprompt',function(e){e.preventDefault();PWA.deferred=e;PWA.emit()});
+window.addEventListener('appinstalled',function(){PWA.installed=true;PWA.deferred=null;PWA.emit()});
+window.addEventListener('online',function(){PWA.emit()});
+window.addEventListener('offline',function(){PWA.emit()});
+PWA.promptInstall=function(){
+  if(!PWA.deferred)return Promise.resolve('manual');
+  var d=PWA.deferred;PWA.deferred=null;PWA.emit();
+  try{d.prompt();return d.userChoice.then(function(c){return c&&c.outcome})}catch(e){return Promise.resolve('manual')}
+};
+function swMain(){
+  var C='perakitpc-tjkt-v1';
+  self.addEventListener('install',function(){self.skipWaiting()});
+  self.addEventListener('activate',function(e){e.waitUntil(caches.keys().then(function(k){return Promise.all(k.filter(function(x){return x!==C}).map(function(x){return caches.delete(x)}))}).then(function(){return self.clients.claim()}))});
+  self.addEventListener('fetch',function(e){
+    if(e.request.method!=='GET')return;
+    e.respondWith(caches.match(e.request).then(function(hit){
+      var net=fetch(e.request).then(function(res){
+        if(res&&(res.ok||res.type==='opaque')){var cp=res.clone();caches.open(C).then(function(c){c.put(e.request,cp)})}
+        return res;
+      }).catch(function(){return hit||caches.match(self.registration.scope)});
+      return hit||net;
+    }));
+  });
+}
+PWA.registerSW=function(){
+  try{ PWA._reg() }catch(e){PWA.sw='tidak aktif';PWA.emit()}
+};
+PWA._reg=function(){
+  if(!('serviceWorker' in navigator)){PWA.sw='tidak didukung';PWA.emit();return}
+  var proto=location.protocol;
+  if(proto!=='https:'&&location.hostname!=='localhost'){PWA.sw='perlu https';PWA.emit();return}
+  var hadCtl=!!navigator.serviceWorker.controller;
+  navigator.serviceWorker.addEventListener('controllerchange',function(){if(hadCtl&&!window.__swReloaded){window.__swReloaded=true;location.reload()}});
+  navigator.serviceWorker.register('./sw.js',{updateViaCache:'none'}).then(function(){PWA.sw='aktif';PWA.emit()}).catch(function(){
+    try{
+      var blob=new Blob(['('+swMain.toString()+')()'],{type:'text/javascript'});
+      navigator.serviceWorker.register(URL.createObjectURL(blob)).then(function(){PWA.sw='aktif';PWA.emit()}).catch(function(){PWA.sw='tidak aktif';PWA.emit()});
+    }catch(e){PWA.sw='tidak aktif';PWA.emit()}
+  });
+};
+PWA.setupManifest=function(){
+  try{
+    if(document.querySelector('link[rel="manifest"]'))return;
+    var svg='<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><rect width="512" height="512" rx="96" fill="#1f4fd8"/><rect x="136" y="136" width="240" height="240" rx="28" fill="#fff"/><rect x="196" y="196" width="120" height="120" rx="14" fill="#1f4fd8"/><path d="M196 100v36M256 100v36M316 100v36M196 376v36M256 376v36M316 376v36M100 196h36M100 256h36M100 316h36M376 196h36M376 256h36M376 316h36" stroke="#fff" stroke-width="16" stroke-linecap="round"/></svg>';
+    var svgUri='data:image/svg+xml,'+encodeURIComponent(svg);
+    var fav=document.createElement('link');fav.rel='icon';fav.type='image/svg+xml';fav.href=svgUri;document.head.appendChild(fav);
+    var build=function(icons){
+      var m={name:'PerakitPC TJKT',short_name:'PerakitPC',description:'Simulasi perakitan PC dan pengenalan komponen komputer untuk siswa SMK TJKT.',
+        start_url:location.href.split('#')[0],display:'standalone',background_color:'#edf0f5',theme_color:'#1f4fd8',lang:'id',icons:icons};
+      var l=document.createElement('link');l.rel='manifest';l.href='data:application/manifest+json;charset=utf-8,'+encodeURIComponent(JSON.stringify(m));document.head.appendChild(l);
+      var a=document.createElement('link');a.rel='apple-touch-icon';a.href=icons[0].src;document.head.appendChild(a);
+    };
+    var img=new Image();
+    img.onload=function(){
+      try{
+        var out=[];[192,512].forEach(function(s){var c=document.createElement('canvas');c.width=s;c.height=s;c.getContext('2d').drawImage(img,0,0,s,s);out.push({src:c.toDataURL('image/png'),sizes:s+'x'+s,type:'image/png',purpose:'any'})});
+        out.push({src:svgUri,sizes:'any',type:'image/svg+xml',purpose:'any'});
+        build(out);
+      }catch(e){build([{src:svgUri,sizes:'any',type:'image/svg+xml',purpose:'any'}])}
+    };
+    img.onerror=function(){build([{src:svgUri,sizes:'any',type:'image/svg+xml',purpose:'any'}])};
+    img.src=svgUri;
+  }catch(e){}
+};
+
+/* ---------- Audio (Web Audio API, tanpa berkas eksternal) ---------- */
+var AU={ctx:null,on:true,
+  tone:function(f,d,type,vol,delay){
+    if(!AU.on)return;
+    try{
+      if(!AU.ctx){var C=window.AudioContext||window.webkitAudioContext;if(!C)return;AU.ctx=new C()}
+      var c=AU.ctx;if(c.state==='suspended')c.resume();
+      var o=c.createOscillator(),g=c.createGain(),t=c.currentTime+(delay||0);
+      o.type=type||'sine';o.frequency.value=f;
+      g.gain.setValueAtTime(vol||0.07,t);g.gain.exponentialRampToValueAtTime(0.0001,t+d);
+      o.connect(g);g.connect(c.destination);o.start(t);o.stop(t+d+0.03);
+    }catch(e){}
+  },
+  tap:function(){AU.tone(520,0.05,'triangle',0.04)},
+  good:function(){AU.tone(660,0.09,'triangle',0.06);AU.tone(880,0.12,'triangle',0.06,0.09)},
+  bad:function(){AU.tone(180,0.22,'sawtooth',0.05)},
+  post:function(){AU.tone(1000,0.18,'square',0.06)},
+  win:function(){[523,659,784,1047].forEach(function(f,i){AU.tone(f,0.16,'triangle',0.06,0.55+i*0.12)})}
+};
+
+window.SIM={ITEMS:ITEMS,ORDER:ORDER,TARGETS:TARGETS,FP:FP,newState:newState,attempt:attempt,power:power,nextStep:nextStep,goodTarget:goodTarget,itemDone:itemDone,isComplete:isComplete,ramCount:ramCount,k3ok:k3ok,upd:upd};
+window.LS=LS;window.PWA=PWA;window.AU=AU;
+})();
+</script>
+
+<script id="scene3d">
+(function(){
+'use strict';
+var T=window.THREE;
+
+/* ===== Koordinat dunia (satuan: cm). Casing direbahkan, sisi terbuka menghadap ke atas ===== */
+var CX=24, CZ=0;
+var BENCH={x:-38,z:0};
+var DRAG_Y=11;
+var FP_COLORS={PWR_SW:0xe0457b,RESET_SW:0xd98a0b,HDD_LED:0x1f9d6b,PWR_LED:0x2f6bff};
+
+/* Pose motherboard */
+var MOBO_BENCH=new T.Vector3(BENCH.x,0.55,BENCH.z);
+var MOBO_CASE=new T.Vector3(CX-6.75,1.95,CZ-8.8);
+/* Posisi lokal (pada motherboard) */
+var XS=-2.0, ZS=-5.5;                      // socket CPU
+var DIMM_X=[5.2,6.45,7.7,8.95], DIMM_Z=-3.0;
+var M2={x:-2.4,z:1.0};
+var PCIE={x:-9.4,z:5.6};
+var ATX24={x:13.6,z:-1.5};
+var EPS={x:-6.9,z:-11.4};
+var FPH={x:9.0,z:10.8};
+
+function Q(x,y,z){return new T.Quaternion().setFromEuler(new T.Euler(x,y,z))}
+function V(x,y,z){return new T.Vector3(x,y,z)}
+function ease(k){return k<.5?2*k*k:1-Math.pow(-2*k+2,2)/2}
+function easeIn(k){return k*k}
+function easeOut(k){return 1-(1-k)*(1-k)}
+
+function supported(){
+  try{
+    if(!window.THREE||!T.OrbitControls)return false;
+    var c=document.createElement('canvas');
+    return !!(window.WebGLRenderingContext&&(c.getContext('webgl')||c.getContext('experimental-webgl')));
+  }catch(e){return false}
+}
+
+function create(container,cb){
+  var W=container.clientWidth||600,H=container.clientHeight||420;
+  var renderer=new T.WebGLRenderer({antialias:true,alpha:false,powerPreference:'default'});
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,2));
+  renderer.setSize(W,H,false);
+  renderer.outputEncoding=T.sRGBEncoding;
+  var canvas=renderer.domElement;
+  canvas.style.cssText='position:absolute;inset:0;width:100%;height:100%;display:block;touch-action:none;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;-webkit-tap-highlight-color:transparent;outline:none';
+  canvas.setAttribute('aria-label','Simulasi perakitan PC 3D. Seret komponen ke slotnya, atau pilih komponen lalu ketuk slotnya.');
+  canvas.tabIndex=0;
+  container.appendChild(canvas);
+
+  var scene=new T.Scene();
+  var camera=new T.PerspectiveCamera(40,W/H,0.5,900);
+  var controls=new T.OrbitControls(camera,canvas);
+  controls.enableDamping=true;controls.dampingFactor=.12;
+  controls.maxPolarAngle=1.5;controls.minDistance=7;controls.maxDistance=260;
+  controls.screenSpacePanning=true;controls.enablePan=true;controls.panSpeed=1.2;controls.keyPanSpeed=14;
+  if(controls.listenToKeyEvents)controls.listenToKeyEvents(canvas);
+  try{if(controls.touches&&T.TOUCH){controls.touches.ONE=T.TOUCH.ROTATE;controls.touches.TWO=T.TOUCH.DOLLY_PAN}}catch(e){}
+
+  scene.add(new T.HemisphereLight(0xffffff,0x8a94a6,.7));
+  scene.add(new T.AmbientLight(0xffffff,.25));
+  var sun=new T.DirectionalLight(0xffffff,.8);sun.position.set(30,90,50);scene.add(sun);
+  var fill=new T.DirectionalLight(0xbfd0ff,.3);fill.position.set(-50,40,-30);scene.add(fill);
+  var glowLight=new T.PointLight(0x66ccff,0,70);glowLight.position.set(CX-4,12,CZ);scene.add(glowLight);
+
+  var fans=[],rgbs=[],glows=[];
+  var M=function(c,o){var p={color:c,roughness:.6,metalness:.1};if(o)for(var k in o)p[k]=o[k];return new T.MeshStandardMaterial(p)};
+  function box(g,w,h,d,mat,x,y,z){var m=new T.Mesh(new T.BoxGeometry(w,h,d),mat);m.position.set(x||0,y||0,z||0);g.add(m);return m}
+  function cyl(g,rt,rb,h,mat,x,y,z,seg){var m=new T.Mesh(new T.CylinderGeometry(rt,rb,h,seg||20),mat);m.position.set(x||0,y||0,z||0);g.add(m);return m}
+
+  function labelTex(lines,w,h,bg,fg,font){
+    var c=document.createElement('canvas');c.width=w;c.height=h;var x=c.getContext('2d');
+    if(bg){x.fillStyle=bg;x.fillRect(0,0,w,h)}
+    x.fillStyle=fg;x.textAlign='center';x.textBaseline='middle';x.font=font;
+    var n=lines.length;for(var i=0;i<n;i++)x.fillText(lines[i],w/2,h*(i+.5)/n);
+    var t=new T.CanvasTexture(c);t.encoding=T.sRGBEncoding;t.anisotropy=4;return t;
+  }
+  function flatText(g,text,w,h,x,y,z,color){
+    var t=labelTex([text],256,Math.max(32,Math.round(256*h/w)),null,color||'rgba(235,245,240,.85)','600 '+Math.round(256*h/w*.62)+'px monospace');
+    var m=new T.Mesh(new T.PlaneGeometry(w,h),new T.MeshBasicMaterial({map:t,transparent:true,depthWrite:false}));
+    m.rotation.x=-Math.PI/2;m.position.set(x,y,z);g.add(m);return m;
+  }
+  function makeFan(r,depth,accent){
+    var g=new T.Group();
+    box(g,2*r+.6,2*r+.6,depth,M(0x1b2029),0,0,0);
+    var rotor=new T.Group();g.add(rotor);
+    var hub=cyl(rotor,r*.28,r*.28,depth+.2,M(0x0c0f14),0,0,0,16);hub.rotation.x=Math.PI/2;
+    for(var i=0;i<7;i++){
+      var a=i/7*Math.PI*2;
+      var b=new T.Group();b.rotation.z=a;rotor.add(b);
+      var bl=box(b,r*.72,r*.4,.14,M(accent||0x3a4458,{roughness:.5}),r*.58,0,0);bl.rotation.x=.45;
+    }
+    fans.push(rotor);return g;
+  }
+
+  /* ===== Meja, casing, monitor ===== */
+  var desk=new T.Mesh(new T.BoxGeometry(160,2,120),M(0xcdd5e1,{roughness:.9}));desk.position.set(6,-1,5);scene.add(desk);
+  var benchMat=new T.Mesh(new T.BoxGeometry(35,.4,31),M(0xaab6c8,{roughness:.95}));benchMat.position.set(BENCH.x,.2,BENCH.z);scene.add(benchMat);
+  flatText(scene,'ALAS ANTI-STATIS',24,2.4,BENCH.x,.43,BENCH.z+13.2,'rgba(40,55,80,.85)');
+  var deskMat=desk.material,matMat=benchMat.material;
+
+  var caseG=new T.Group();scene.add(caseG);
+  box(caseG,46,1,44,M(0x39414f,{metalness:.5,roughness:.5}),CX,.5,CZ);
+  var wallRear=box(caseG,.8,18,44,M(0x4d586b,{metalness:.4}),CX-23.2,10,CZ);
+  var wallFront=box(caseG,.8,18,44,M(0x4d586b,{metalness:.4,transparent:true,opacity:.55}),CX+23.2,10,CZ);
+  box(caseG,47.2,18,.8,M(0x4d586b,{metalness:.4,transparent:true,opacity:.55}),CX,10,CZ-22.4);
+  box(caseG,47.2,1.2,.8,M(0x4d586b),CX,1.6,CZ+22.4);
+  // lubang I/O dan slot ekspansi pada dinding belakang
+  box(caseG,.1,5.4,16.4,M(0x080a0e),CX-22.78,4.45,CZ-12.85);
+  box(caseG,.1,12,4.6,M(0x080a0e),CX-22.78,7.6,CZ-3.0);
+  // standoff
+  var gold=M(0xc9a24a,{metalness:.8,roughness:.35});
+  [[-13.5,-10.5],[13.5,-10.5],[-13.5,10.5],[13.5,10.5],[0,-10.5],[0,10.5]].forEach(function(o){
+    cyl(caseG,.4,.4,.8,gold,MOBO_CASE.x+o[0],1.4,MOBO_CASE.z+o[1],10);
+  });
+  flatText(caseG,'BAY MOTHERBOARD',22,2,CX-6,1.04,CZ+7.6,'rgba(220,230,245,.55)');
+  flatText(caseG,'BAY PSU',9,2,CX-14.5,1.04,CZ+16.5,'rgba(220,230,245,.55)');
+  // kipas dan LED casing
+  var cf1=makeFan(5.5,1,0x4d6fa8);cf1.position.set(CX+22.3,10,CZ-12);cf1.rotation.y=-Math.PI/2;caseG.add(cf1);
+  var cf2=makeFan(5.5,1,0x4d6fa8);cf2.position.set(CX+22.3,10,CZ-1);cf2.rotation.y=-Math.PI/2;caseG.add(cf2);
+  var rf=makeFan(4.2,1,0x4d6fa8);rf.position.set(CX-22.3,14.4,CZ-12.85);rf.rotation.y=Math.PI/2;caseG.add(rf);
+  var ledPwr=box(caseG,.4,.9,.9,M(0x1a2a20,{emissive:0x000000}),CX+22.6,17,CZ-17);
+  var ledHdd=box(caseG,.4,.9,.9,M(0x2a2410,{emissive:0x000000}),CX+22.6,17,CZ-15.4);
+  glows.push({m:ledPwr.material,on:0x22ff77},{m:ledHdd.material,on:0xffb020});
+  var fpSrc=V(CX+22.0,6.5,CZ-4);
+
+  var monitor=new T.Group();monitor.position.set(66,0,-16);monitor.rotation.y=-.5;scene.add(monitor);
+  box(monitor,13,.8,9,M(0x1d2330),0,.4,0);
+  box(monitor,2.4,9,2,M(0x1d2330),0,4.8,-.5);
+  box(monitor,35,21,1.6,M(0x10151d),0,17.5,0);
+  var scrCanvas=document.createElement('canvas');scrCanvas.width=640;scrCanvas.height=360;
+  var scrCtx=scrCanvas.getContext('2d');
+  var scrTex=new T.CanvasTexture(scrCanvas);scrTex.encoding=T.sRGBEncoding;
+  var scr=new T.Mesh(new T.PlaneGeometry(32.6,18.6),new T.MeshBasicMaterial({map:scrTex}));scr.position.set(0,17.5,.85);monitor.add(scr);
+  var screenState={lines:[],shown:0,on:false,timer:null};
+  function drawScreen(){
+    var c=scrCtx;c.fillStyle='#050b14';c.fillRect(0,0,640,360);
+    if(!screenState.on){
+      c.fillStyle='#4b5a70';c.font='600 28px monospace';c.textAlign='center';c.textBaseline='middle';c.fillText('NO SIGNAL',320,170);
+      c.font='16px monospace';c.fillText('Rakit PC lalu tekan tombol power',320,205);
+    }else{
+      c.textAlign='left';c.textBaseline='top';c.font='600 20px monospace';
+      for(var i=0;i<screenState.shown&&i<screenState.lines.length;i++){
+        var ln=screenState.lines[i];c.fillStyle=ln.c||'#9df0c0';c.fillText(ln.t,28,24+i*30);
+      }
+    }
+    scrTex.needsUpdate=true;
+  }
+  drawScreen();
+
+  /* ===== Registri slot (hitbox) ===== */
+  var hits={},hitList=[];
+  function addHit(parent,id,w,h,d,x,y,z){
+    var geo=new T.BoxGeometry(w,h,d);
+    var mesh=new T.Mesh(geo,new T.MeshBasicMaterial({color:0x4d7cff,transparent:true,opacity:0,depthWrite:false,depthTest:false}));
+    mesh.position.set(x,y,z);mesh.renderOrder=6;mesh.userData.isHit=true;mesh.userData.slot=id;
+    var edges=new T.LineSegments(new T.EdgesGeometry(geo),new T.LineBasicMaterial({color:0x4d7cff,transparent:true,opacity:0,depthTest:false}));
+    edges.renderOrder=7;edges.userData.isHit=true;mesh.add(edges);
+    parent.add(mesh);
+    hits[id]={mesh:mesh,edges:edges,enabled:true};hitList.push(mesh);
+  }
+
+  /* ===== Motherboard ===== */
+  var P={};
+  var moboG=new T.Group();
+  (function(){
+    var g=moboG;
+    var pcb=M(0x1f6b4f,{roughness:.55});
+    var tc=document.createElement('canvas');tc.width=610;tc.height=488;var tx=tc.getContext('2d');
+    tx.fillStyle='#1f6b4f';tx.fillRect(0,0,610,488);
+    tx.strokeStyle='rgba(120,214,170,.55)';tx.lineWidth=2;
+    var seed=7;function rnd(){seed=(seed*16807)%2147483647;return seed/2147483647}
+    for(var ti=0;ti<150;ti++){var x0=rnd()*610,y0=rnd()*488;tx.beginPath();tx.moveTo(x0,y0);
+      var hz=rnd()<.5;var l1=30+rnd()*120;if(hz)tx.lineTo(x0+l1,y0);else tx.lineTo(x0,y0+l1);
+      var l2=20+rnd()*60;if(hz)tx.lineTo(x0+l1,y0+(rnd()<.5?-l2:l2));else tx.lineTo(x0+(rnd()<.5?-l2:l2),y0+l1);tx.stroke()}
+    tx.fillStyle='rgba(200,230,215,.5)';for(var vi=0;vi<120;vi++){tx.beginPath();tx.arc(rnd()*610,rnd()*488,2.2,0,6.28);tx.fill()}
+    var ptex=new T.CanvasTexture(tc);ptex.encoding=T.sRGBEncoding;
+    var pcbTop=M(0xffffff,{roughness:.55});pcbTop.map=ptex;
+    var pcbBox=new T.Mesh(new T.BoxGeometry(30.5,.3,24.4),[pcb,pcb,pcbTop,pcb,pcb,pcb]);g.add(pcbBox);
+    var blk=M(0x14181f),gry=M(0x2c3340),metal=M(0x3b4556,{metalness:.6,roughness:.4});
+    // I/O
+    box(g,6.25,4.4,14.5,M(0x9aa5b6,{metalness:.6,roughness:.4}),-12.1,2.35,-4.2);
+    for(var i=0;i<5;i++)box(g,.1,1.3,2.2,blk,-15.28,1.7+(i%2)*1.5,-10.2+i*3);
+    // VRM
+    box(g,2.4,1.8,9.5,metal,-7.2,1.05,ZS);
+    box(g,7,1.8,2.2,metal,.4,1.05,-10.6);
+    // socket
+    box(g,6.4,.6,6.4,blk,XS,.45,ZS);
+    box(g,5.2,.1,5.2,M(0x242b36),XS,.78,ZS);
+    // DIMM
+    for(var d=0;d<4;d++)box(g,1.15,1.0,13.3,(d===1||d===3)?gry:M(0x10141a),DIMM_X[d],.65,DIMM_Z);
+    // 24 pin, EPS, F_PANEL
+    box(g,1.2,1.4,5.2,blk,ATX24.x,.85,ATX24.z);
+    box(g,4.4,1.5,1.6,blk,EPS.x,.9,EPS.z);
+    box(g,5.5,.8,1.6,blk,FPH.x,.55,FPH.z);
+    for(var f=0;f<5;f++){box(g,.3,.4,.3,gold,FPH.x-2.1+f*1.05,1.05,FPH.z-.35);box(g,.3,.4,.3,gold,FPH.x-2.1+f*1.05,1.05,FPH.z+.35)}
+    // M.2
+    box(g,.8,.7,2.4,blk,M2.x-4.4,.5,M2.z);
+    cyl(g,.35,.35,.5,gold,M2.x+4.1,.4,M2.z,10);
+    // PCIe x16 dan x1
+    box(g,8.9,.9,.8,blk,PCIE.x,.6,PCIE.z);
+    box(g,2.4,.9,.8,blk,PCIE.x-3.2,.6,9.9);
+    // chipset, SATA, baterai
+    box(g,4.2,1.1,4.2,metal,5.5,.7,7.3);
+    for(var s=0;s<4;s++)box(g,1.5,1.0,.9,blk,12.8,.65,5.5+s*1.0);
+    cyl(g,1.2,1.2,.5,M(0xaeb7c4,{metalness:.7}),0,.4,9.5,18);
+    // kapasitor
+    for(var k=0;k<6;k++)cyl(g,.35,.35,1.1,M(0x2a2f38),-5+k*1.1,.7,-8.2+0*k,10);
+    // silkscreen
+    flatText(g,'SOCKET CPU',6,1.1,XS,.17,-1.0);
+    flatText(g,'M.2',3,1,M2.x,.17,3.0);
+    flatText(g,'PCIe x16',6,1,PCIE.x,.17,7.3);
+    flatText(g,'DIMM A1 A2 B1 B2',8,1,7.1,.17,4.9);
+    flatText(g,'24-PIN ATX',5,1,12.2,.17,3.0);
+    flatText(g,'CPU 8-PIN',5,1,EPS.x,.17,-9.6);
+    flatText(g,'F_PANEL',4.5,1,FPH.x,.17,8.8);
+    // slot hit
+    addHit(g,'socket',7.4,3.6,7.4,XS,1.9,ZS);
+    for(var h=0;h<4;h++)addHit(g,'dimm'+h,1.15,1.7,13.9,DIMM_X[h],.95,DIMM_Z);
+    addHit(g,'m2',8.6,1.7,2.8,M2.x,.95,M2.z);
+    addHit(g,'pcie',9.6,3,1.8,PCIE.x,1.4,PCIE.z);
+    addHit(g,'atx24',2.2,2.4,6.0,ATX24.x,1.2,ATX24.z);
+    addHit(g,'eps',5.2,2.4,2.6,EPS.x,1.3,EPS.z);
+    addHit(g,'fph',6.4,2,2.6,FPH.x,1.0,FPH.z);
+  })();
+  scene.add(moboG);
+
+  /* ===== Komponen ===== */
+  function build(key){
+    var g=new T.Group();
+    switch(key){
+      case 'cpu':
+        box(g,3.75,.2,3.75,M(0x2f7d4f),0,.1,0);
+        box(g,3.0,.3,3.0,M(0xc8d0da,{metalness:.7,roughness:.35}),0,.35,0);
+        box(g,.5,.22,.5,M(0xd9a521),-1.5,.11,-1.5);break;
+      case 'paste':
+        cyl(g,.5,.12,1.2,M(0xe8eef7),0,.6,0,12).rotation.x=Math.PI;
+        cyl(g,.55,.55,6,M(0xdfe6ef,{transparent:true,opacity:.75}),0,4.2,0,16);
+        cyl(g,.45,.45,4.6,M(0xaeb8c6),0,4.0,0,16);
+        cyl(g,.2,.2,2.2,M(0xe8eef7),0,8.3,0,10);
+        cyl(g,.75,.75,.2,M(0xe8eef7),0,9.5,0,16);break;
+      case 'cooler':
+        box(g,6.2,1.0,6.2,M(0x6b7585,{metalness:.7}),0,.5,0);
+        for(var i=0;i<13;i++)box(g,5.2,13,.35,M(i%2?0x9aa5b5:0xc4ccd8,{metalness:.6,roughness:.4}),0,7.5,-5.1+i*.85);
+        cyl(g,.3,.3,12,M(0xb87333,{metalness:.8}),-1.2,7,-1.2,8);cyl(g,.3,.3,12,M(0xb87333,{metalness:.8}),1.2,7,1.2,8);
+        var fan=makeFan(5.2,2.4,0x8a96ab);fan.position.set(-3.9,7.6,0);fan.rotation.y=-Math.PI/2;g.add(fan);break;
+      case 'ram':
+        box(g,.2,3.0,13.3,M(0x1e6b46),0,1.9,0);
+        box(g,.18,2.5,12.8,M(0x2f6bff,{metalness:.6,roughness:.4}),.19,2.1,0);
+        box(g,.18,2.5,12.8,M(0x2f6bff,{metalness:.6,roughness:.4}),-.19,2.1,0);
+        var rg=M(0xff4fa0,{emissive:0x000000});box(g,.55,.35,12.4,rg,0,3.55,0);rgbs.push(rg);
+        box(g,.22,.5,12.2,gold,0,.25,0);break;
+      case 'ssd':
+        box(g,8,.14,2.2,M(0x202a38),0,0,0);
+        box(g,1.4,.15,1.4,M(0x7d8794,{metalness:.6}),-2.6,.12,0);
+        box(g,1.9,.14,1.7,M(0x0b0d12),-.3,.12,0);box(g,1.9,.14,1.7,M(0x0b0d12),1.8,.12,0);
+        box(g,3.4,.02,1.9,M(0xe8ecf2),1.0,.21,0);
+        cyl(g,.32,.32,.2,gold,3.95,.1,0,10);
+        box(g,.3,.15,2.0,gold,-3.9,0,0);break;
+      case 'io':
+        box(g,.25,5.2,16.2,M(0xb7c0cc,{metalness:.7,roughness:.4}),0,0,0);
+        for(var j=0;j<5;j++){var zz=-6.4+j*3.2;box(g,.32,1.3,2.4,M(0x080a0e),0,1.1,zz);box(g,.32,1.3,2.4,M(0x080a0e),0,-1.1,zz)}break;
+      case 'psu':
+        box(g,14,15,8.6,M(0x1a1e25,{roughness:.5}),0,0,0);
+        var pf=makeFan(5.2,.5,0x2c3442);pf.position.set(0,0,4.5);g.add(pf);
+        var tor=new T.Mesh(new T.TorusGeometry(5.7,.14,8,40),M(0x3b4556));tor.position.set(0,0,4.5);g.add(tor);
+        var lt=labelTex(['PSU 650W','80 PLUS BRONZE'],256,128,'#f0f3f7','#14202e','700 34px sans-serif');
+        var lp=new T.Mesh(new T.PlaneGeometry(9,5),new T.MeshBasicMaterial({map:lt}));lp.rotation.x=-Math.PI/2;lp.position.set(0,7.55,0);g.add(lp);
+        box(g,.4,6,5,M(0x07090c),7.2,2,0);
+        box(g,.3,1.2,2,M(0xcc3333),-7.1,3,0);break;
+      case 'vga':
+        box(g,22.5,11,.2,M(0x1e3a55),0,5.5,0);
+        box(g,22.5,10.4,3.2,M(0x1b2230,{roughness:.45}),0,5.4,1.8);
+        box(g,22.3,10.6,.1,M(0x3a4254,{metalness:.6}),0,5.4,-.2);
+        box(g,.25,11.6,4.0,M(0xb7c0cc,{metalness:.7}),-11.3,5.8,1.6);
+        for(var q=0;q<4;q++)box(g,.32,1.5,1.9,M(0x080a0e),-11.3,1.8+q*2.4,1.6);
+        box(g,8.9,.5,.14,gold,-4.9,.25,0);
+        [-4.6,4.6].forEach(function(fx){var ff=makeFan(4.2,.5,0x4a5870);ff.position.set(fx,5.4,3.5);g.add(ff)});
+        var st=M(0x1ec86a,{emissive:0x000000});box(g,10,.25,.5,st,0,10.7,2.6);glows.push({m:st,on:0x1ec86a});
+        box(g,6,.3,.2,M(0x7a8aa6),-4,5.4,3.5+0*1);break;
+      case 'c24':
+        box(g,1.5,2.6,5.8,M(0x1d2128),0,1.3,0);box(g,.3,.8,2.5,M(0xd98a0b),0,2.9,0);break;
+      case 'c8':
+        box(g,4.2,2.4,1.9,M(0x1d2128),0,1.2,0);box(g,2.2,.7,.3,M(0x6d4bd8),0,2.6,0);break;
+      case 'fp':
+        box(g,5.0,1.4,1.5,M(0x1d2128),0,.7,0);
+        ['PWR_SW','RESET_SW','HDD_LED','PWR_LED'].forEach(function(n,i){box(g,.9,.2,.8,M(FP_COLORS[n]),-1.8+i*1.2,1.5,0)});break;
+    }
+    return g;
+  }
+
+  var labelsOn=true;
+  function mkLabel(text){
+    var c=document.createElement('canvas'),x=c.getContext('2d');
+    x.font='600 30px sans-serif';var tw=Math.ceil(x.measureText(text).width)+34;c.width=tw;c.height=54;
+    x=c.getContext('2d');x.font='600 30px sans-serif';
+    x.fillStyle='rgba(12,20,34,.82)';
+    var r=14;x.beginPath();x.moveTo(r,0);x.arcTo(tw,0,tw,54,r);x.arcTo(tw,54,0,54,r);x.arcTo(0,54,0,0,r);x.arcTo(0,0,tw,0,r);x.fill();
+    x.fillStyle='#fff';x.textAlign='center';x.textBaseline='middle';x.fillText(text,tw/2,28);
+    var t=new T.CanvasTexture(c);t.encoding=T.sRGBEncoding;
+    var s=new T.Sprite(new T.SpriteMaterial({map:t,transparent:true,depthTest:false}));
+    s.scale.set(tw/54*2.6,2.6,1);s.renderOrder=10;return s;
+  }
+
+  var DEFS=[
+    {key:'mobo',item:'mobo',name:'Motherboard',home:[-46,34],hq:Q(0,0,0)},
+    {key:'cpu',item:'cpu',name:'Processor',home:[-24,27],hq:Q(0,0,0)},
+    {key:'paste',item:'paste',name:'Thermal Paste',home:[-16,27],hq:Q(0,0,Math.PI/2)},
+    {key:'ssd',item:'ssd',name:'SSD NVMe M.2',home:[-6,27],hq:Q(0,0,0)},
+    {key:'io',item:'io',name:'I/O Shield',home:[6,27],hq:Q(0,0,Math.PI/2)},
+    {key:'cooler',item:'cooler',name:'CPU Cooler',home:[-21,42],hq:Q(0,0,0)},
+    {key:'ram0',item:'ram',build:'ram',name:'RAM',home:[-9,40],hq:Q(0,0,Math.PI/2)},
+    {key:'ram1',item:'ram',build:'ram',name:'RAM',home:[-3,40],hq:Q(0,0,Math.PI/2)},
+    {key:'psu',item:'psu',name:'Power Supply',home:[22,36],hq:Q(-Math.PI/2,0,0)},
+    {key:'vga',item:'vga',name:'VGA Card',home:[46,34],hq:Q(-Math.PI/2,0,0)},
+    {key:'c24',item:'c24',name:'Kabel 24-pin',home:[10,48],hq:Q(0,0,0)},
+    {key:'c8',item:'c8',name:'Kabel CPU 8-pin',home:[19,48],hq:Q(0,0,0)},
+    {key:'fp',item:'fp',name:'Kabel Front Panel',home:[32,48],hq:Q(0,0,0)}
+  ];
+  var ID=new T.Quaternion();
+  DEFS.forEach(function(d){
+    var root=d.key==='mobo'?moboG:build(d.build||d.key);
+    if(d.key!=='mobo')scene.add(root);
+    root.userData.partKey=d.key;
+    var p={key:d.key,item:d.item,name:d.name,root:root,loc:'home',def:d,noFollow:false};
+    root.updateMatrixWorld(true);
+    var bb0=new T.Box3().setFromObject(root);
+    p.localCenter=bb0.getCenter(new T.Vector3());
+    var sz0=bb0.getSize(new T.Vector3());p.maxDim=Math.max(sz0.x,sz0.y,sz0.z,1);
+    root.position.set(d.home[0],0,d.home[1]);root.quaternion.copy(d.hq);root.updateMatrixWorld(true);
+    var bb=new T.Box3().setFromObject(root);root.position.y-=bb.min.y;
+    root.updateMatrixWorld(true);bb.setFromObject(root);
+    p.home={pos:root.position.clone(),quat:d.hq.clone(),top:bb.max.y};
+    p.label=mkLabel(d.name);scene.add(p.label);
+    P[d.key]=p;
+  });
+  // pose pemasangan
+  var LOCAL={
+    cpu:{pos:V(XS,.75,ZS),quat:ID},
+    cooler:{pos:V(XS,1.3,ZS),quat:ID},
+    ram0:{pos:V(DIMM_X[1],.75,DIMM_Z),quat:ID},
+    ram1:{pos:V(DIMM_X[3],.75,DIMM_Z),quat:ID},
+    ssd:{pos:V(M2.x,.95,M2.z),quat:ID},
+    vga:{pos:V(PCIE.x+4.9,.6,PCIE.z),quat:ID},
+    c24:{pos:V(ATX24.x,.35,ATX24.z),quat:ID},
+    c8:{pos:V(EPS.x,.3,EPS.z),quat:ID},
+    fp:{pos:V(FPH.x,.3,FPH.z),quat:ID}
+  };
+  var CASEPOSE={
+    io:{pos:V(CX-22.45,4.45,CZ-12.85),quat:ID},
+    psu:{pos:V(CX-14.5,8.5,CZ+16.5),quat:ID}
+  };
+  var POSE={bench:{pos:MOBO_BENCH,quat:ID},cse:{pos:MOBO_CASE,quat:ID}};
+  var vis={psu:false};
+
+  // dollop pasta
+  var dollop=new T.Mesh(new T.SphereGeometry(.55,14,10),M(0xdfe5ee,{roughness:.4}));
+  dollop.scale.set(1,.45,1);dollop.position.set(XS,1.38,ZS);dollop.visible=false;moboG.add(dollop);
+
+  /* ===== Kabel ===== */
+  var cables=[];
+  function mkCable(key,exit,r,color,endFn,endDir,off){
+    var m=new T.Mesh(new T.BufferGeometry(),M(color,{roughness:.7}));scene.add(m);
+    cables.push({key:key,exit:exit,r:r,mesh:m,endFn:endFn,endDir:endDir,off:off||0});
+  }
+  var psuOut={c24:V(7.6,3.6,-1.2),c8:V(7.6,1.0,1.4)};
+  function loose(key){var h=P[key].home.pos;return V(h.x,.6,h.z-8)}
+  mkCable('c24',V(0,2.6,0),.55,0x15181d,function(){return vis.psu?P.psu.root.localToWorld(psuOut.c24.clone()):loose('c24')},V(1.5,.6,0));
+  mkCable('c8',V(0,2.4,0),.4,0x15181d,function(){return vis.psu?P.psu.root.localToWorld(psuOut.c8.clone()):loose('c8')},V(1.5,.6,0));
+  ['PWR_SW','RESET_SW','HDD_LED','PWR_LED'].forEach(function(n,i){
+    mkCable('fp',V(-1.8+i*1.2,1.55,0),.12,FP_COLORS[n],function(){
+      return P.fp.loc==='mobo'?V(fpSrc.x,fpSrc.y,fpSrc.z+i*1.1):loose('fp').add(V(-1.8+i*1.2,0,0));
+    },V(0,.4,-1.5),i);
+  });
+  function updateCables(){
+    cables.forEach(function(c){
+      var plug=P[c.key].root;plug.updateMatrixWorld(true);
+      var p0=plug.localToWorld(c.exit.clone());var p1=c.endFn();
+      var d=p0.distanceTo(p1);
+      var a=p0.clone();a.y+=2.2;
+      var mid=p0.clone().lerp(p1,.5);mid.y+=Math.min(7,d*.14)+1.2;
+      var b=p1.clone().add(c.endDir);
+      var curve=new T.CatmullRomCurve3([p0,a,mid,b,p1]);
+      c.mesh.geometry.dispose();c.mesh.geometry=new T.TubeGeometry(curve,26,c.r,6,false);
+    });
+  }
+
+  /* ===== Tween ===== */
+  var tweens=[];
+  function tw(dur,upd,done,fn){var o={t0:performance.now(),dur:dur*1000,upd:upd,done:done,fn:fn||ease};tweens.push(o);return o}
+  function stepTweens(now){
+    for(var i=tweens.length-1;i>=0;i--){
+      var t=tweens[i];var k=Math.min(1,(now-t.t0)/t.dur);t.upd(t.fn(k));
+      if(k>=1){tweens.splice(i,1);if(t.done)t.done()}
+    }
+  }
+  function flyTo(root,pos,quat,hover,done){
+    var p0=root.position.clone(),q0=root.quaternion.clone(),s0=root.scale.x;
+    var up=pos.clone();up.y+=hover;
+    tw(.6,function(k){root.position.lerpVectors(p0,up,k);root.quaternion.copy(q0).slerp(quat,k);var sv=s0+(1-s0)*k;root.scale.set(sv,sv,sv)},function(){
+      var p1=root.position.clone();
+      tw(.35,function(k){root.position.lerpVectors(p1,pos,k)},done,easeIn);
+    });
+  }
+
+  /* ===== Seleksi & glow ===== */
+  var sel=null,selPart=null,armed=false,hint=null,hover=null,busy=false,dragging=null,power=false,practice=true;
+  function setGlow(p,on){
+    p.root.traverse(function(o){
+      if(!o.material||o.userData.isHit||o.isSprite||o.isLine)return;
+      var mats=Array.isArray(o.material)?o.material:[o.material];
+      mats.forEach(function(m){
+        if(!m.emissive||m.userData.keep)return;
+        if(m.userData.e0===undefined)m.userData.e0=m.emissive.getHex();
+        if(rgbs.indexOf(m)>=0&&power)return;
+        m.emissive.setHex(on?0x1a3a99:m.userData.e0);
+      });
+    });
+  }
+  function lifted(p){
+    if(p.loc==='home')return p.home.pos.clone().add(V(0,3,0));
+    if(p.loc==='bench')return MOBO_BENCH.clone().add(V(0,3,0));
+    return null;
+  }
+  function settled(p){
+    if(p.loc==='home')return p.home.pos.clone();
+    if(p.loc==='bench')return MOBO_BENCH.clone();
+    return null;
+  }
+  function partFor(item){
+    if(item==='ram')return P.ram0.loc==='home'?P.ram0:P.ram1;
+    return P[item];
+  }
+  function lowerPart(p){return;
+    var tgt=settled(p);if(!tgt)return;
+    var from=p.root.position.clone();
+    tw(.2,function(k){p.root.position.lerpVectors(from,tgt,k)});
+  }
+  function liftPart(p){return;
+    var tgt=lifted(p);if(!tgt)return;
+    var from=p.root.position.clone();
+    tw(.2,function(k){p.root.position.lerpVectors(from,tgt,k)});
+  }
+
+  /* ===== API ===== */
+  var synced=null;
+  var api={};
+  api.isBusy=function(){return busy};
+  api.setPractice=function(v){practice=v};
+  api.setSelected=function(item){
+    if(sel===item&&(!item||selPart===partFor(item)))return;
+    if(selPart){setGlow(selPart,false);if(!dragging||dragging!==selPart)lowerPart(selPart)}
+    sel=item||null;selPart=item?partFor(item):null;armed=!!item;
+    if(selPart){setGlow(selPart,true);if(!dragging)liftPart(selPart)}
+  };
+  api.setHint=function(id){hint=id};
+  api.enable=function(S){
+    hits.bench.enabled=S.mobo==='tray';
+    hits.caseBay=hits.caseBay;
+    if(hits.caseBay)hits.caseBay.enabled=S.mobo==='bench';
+    hits.socket.enabled=!S.cooler;
+    for(var i=0;i<4;i++)hits['dimm'+i].enabled=!S.ram[i];
+    hits.m2.enabled=!S.ssd;hits.pcie.enabled=!S.vga;
+    hits.atx24.enabled=!S.c24;hits.eps.enabled=!S.c8;hits.fph.enabled=!S.fp;
+    hits.io.enabled=!S.io;hits.psuBay.enabled=!S.psu;
+  };
+  // hit non-mobo
+  addHit(scene,'bench',34,1,30,BENCH.x,.9,BENCH.z);
+  addHit(scene,'caseBay',45,.8,43,CX,1.4,CZ);
+  addHit(scene,'io',1.4,6.2,16.6,CX-22.3,4.45,CZ-12.85);
+  addHit(scene,'psuBay',15.6,16,9.6,CX-14.5,8.5,CZ+16.5);
+
+  function placeInstalled(p){
+    p.root.scale.set(1,1,1);p.noFollow=false;
+    if(LOCAL[p.key]){moboG.add(p.root);p.root.position.copy(LOCAL[p.key].pos);p.root.quaternion.copy(LOCAL[p.key].quat);p.loc='mobo'}
+    else if(CASEPOSE[p.key]){scene.add(p.root);p.root.position.copy(CASEPOSE[p.key].pos);p.root.quaternion.copy(CASEPOSE[p.key].quat);p.loc='case'}
+  }
+  function placeHome(p){
+    p.root.scale.set(1,1,1);p.noFollow=false;
+    scene.add(p.root);p.root.position.copy(p.home.pos);p.root.quaternion.copy(p.home.quat);p.loc='home';
+  }
+  var cableDirty=0;
+  api.sync=function(S){
+    if(synced===S)return;
+    synced=S;tweens.length=0;busy=false;dragging=null;
+    if(selPart)setGlow(selPart,false);sel=null;selPart=null;armed=false;
+    // mobo
+    var mp=P.mobo;scene.add(moboG);
+    moboG.scale.set(1,1,1);mp.noFollow=false;
+    if(S.mobo==='tray'){moboG.position.copy(mp.home.pos);moboG.quaternion.copy(mp.home.quat);mp.loc='home'}
+    else if(S.mobo==='bench'){moboG.position.copy(MOBO_BENCH);moboG.quaternion.copy(ID);mp.loc='bench'}
+    else{moboG.position.copy(MOBO_CASE);moboG.quaternion.copy(ID);mp.loc='case'}
+    moboG.updateMatrixWorld(true);
+    function put(key,on){var p=P[key];if(on)placeInstalled(p);else placeHome(p)}
+    put('cpu',S.cpu);put('cooler',S.cooler);put('ssd',S.ssd);put('vga',S.vga);
+    put('io',S.io);put('psu',S.psu);put('c24',S.c24);put('c8',S.c8);put('fp',S.fp);
+    placeHome(P.paste);P.paste.used=!!S.paste;P.paste.root.visible=!S.paste;
+    var idx=[];S.ram.forEach(function(v,i){if(v)idx.push(i)});
+    put('ram0',idx.length>0);put('ram1',idx.length>1);
+    if(idx.length>0)P.ram0.root.position.x=DIMM_X[idx[0]];
+    if(idx.length>1)P.ram1.root.position.x=DIMM_X[idx[1]];
+    vis.psu=!!S.psu;
+    dollop.visible=!!S.paste&&!S.cooler;
+    api.enable(S);setPower(false);cableDirty=3;
+  };
+  api.syncMark=function(S){synced=S};
+
+  function worldTarget(p){
+    var l=LOCAL[p.key];
+    if(l){moboG.updateMatrixWorld(true);return{pos:moboG.localToWorld(l.pos.clone()),quat:moboG.quaternion.clone().multiply(l.quat)}}
+    return CASEPOSE[p.key];
+  }
+  api.install=function(item,slot,S,done){
+    busy=true;
+    var finish=function(){busy=false;synced=S;api.enable(S);cableDirty=3;if(done)done()};
+    var p=partFor(item);
+    p.noFollow=true;
+    if(p.root.parent!==scene)scene.attach(p.root);
+    if(item==='mobo'){
+      var tgt=slot==='bench'?POSE.bench:POSE.cse;
+      flyTo(moboG,tgt.pos,tgt.quat,slot==='bench'?9:18,function(){p.loc=slot==='bench'?'bench':'case';p.noFollow=false;finish()});
+      return;
+    }
+    if(item==='paste'){
+      moboG.updateMatrixWorld(true);
+      var above=moboG.localToWorld(V(XS,1.25+1.5,ZS));
+      flyTo(p.root,above,ID,7,function(){
+        dollop.visible=true;dollop.scale.set(.01,.01,.01);
+        tw(.8,function(k){var s=k;dollop.scale.set(s,.45*s,s)},function(){
+          var back=p.home.pos.clone(),from=p.root.position.clone();
+          tw(.5,function(k){p.root.position.lerpVectors(from,V(from.x,from.y+7,from.z),k)},function(){
+            var f2=p.root.position.clone(),q2=p.root.quaternion.clone();
+            var hv=back.clone();
+            tw(.6,function(k){
+              p.root.position.lerpVectors(f2,hv,k);p.root.position.y+=Math.sin(k*Math.PI)*8*(1-k);
+              p.root.quaternion.copy(q2).slerp(p.home.quat,k)
+            },function(){p.loc='home';p.used=true;p.root.visible=false;p.noFollow=false;setGlow(p,false);finish()});
+          });
+        });
+      });
+      return;
+    }
+    var t=worldTarget(p);
+    flyTo(p.root,t.pos,t.quat,item==='psu'?14:(item==='vga'?16:10),function(){
+      placeInstalled(p);
+      if(item==='psu')vis.psu=true;
+      if(item==='cooler')dollop.visible=false;
+      setGlow(p,false);
+      if(item==='ram'){
+        var idx=slot==='dimm1'?1:3;p.root.position.x=DIMM_X[idx];
+      }
+      finish();
+    });
+  };
+  api.reject=function(item){
+    var p=selPart||partFor(item);if(!p)return;
+    var b=p.root.position.clone();p.noFollow=true;
+    tw(.4,function(k){p.root.position.x=b.x+Math.sin(k*Math.PI*4)*.9*(1-k)},function(){p.noFollow=false});
+  };
+  api.cancelDrag=function(){
+    var p=selPart;dragging=null;if(p)p.noFollow=false;
+  };
+
+  function setPower(on,lines){
+    power=on;
+    clearInterval(screenState.timer);
+    screenState.on=on;screenState.lines=lines||[];screenState.shown=0;
+    if(on){
+      screenState.timer=setInterval(function(){
+        screenState.shown++;drawScreen();
+        if(screenState.shown>=screenState.lines.length)clearInterval(screenState.timer);
+      },380);
+    }else drawScreen();
+    glows.forEach(function(g){g.m.emissive.setHex(on?g.on:0x000000);g.m.emissiveIntensity=on?1.2:1});
+    rgbs.forEach(function(m){if(!on)m.emissive.setHex(0x000000)});
+    glowLight.intensity=on?.9:0;
+  }
+  api.setPower=setPower;
+
+  api.setTheme=function(dark){
+    scene.background=new T.Color(dark?0x0b1119:0xe9edf4);
+    deskMat.color.setHex(dark?0x1c2735:0xcdd5e1);
+    matMat.color.setHex(dark?0x2a3a50:0xaab6c8);
+    sun.intensity=dark?.55:.8;
+  };
+
+  /* ===== Kamera ===== */
+  function viewAt(tgt,w,dir){
+    var asp=camera.aspect;
+    var half=Math.atan(Math.tan(camera.fov*Math.PI/360)*asp);
+    var dist=(w/2)/Math.tan(half)*1.08;
+    var d=(dir||V(0,.84,.54)).clone().normalize();
+    return{tgt:tgt,pos:tgt.clone().add(d.multiplyScalar(dist))};
+  }
+  function viewFor(name){
+    if(name==='bench')return viewAt(V(BENCH.x,0,2),44);
+    if(name==='case')return viewAt(V(CX-3,0,1),56);
+    if(name==='parts')return viewAt(V(4,0,38),100);
+    if(name==='board'){var t=moboG.position.clone();t.z+=1;return viewAt(t,38)}
+    if(name==='work')return viewAt(V(-34,0,15),68);
+    return viewAt(V(8,0,14),146);
+  }
+  function itemView(item){
+    moboG.updateMatrixWorld(true);
+    var L=function(x,z,w,dir){var t=moboG.localToWorld(V(x,1,z));t.y=Math.max(t.y,0);return viewAt(t,w,dir)};
+    var C=V(0,.9,.44);
+    switch(item){
+      case 'mobo':return(P.mobo.loc==='case')?viewFor('case'):((P.mobo.loc==='bench')?viewFor('case'):viewFor('bench'));
+      case 'cpu':case 'paste':case 'cooler':return L(XS-1,ZS,17,C);
+      case 'ram':return L(DIMM_X[2],-2.5,19,C);
+      case 'ssd':return L(1,-1,22,C);
+      case 'io':return viewAt(V(CX-19,3,CZ-12.85),26,V(.35,.9,.4));
+      case 'psu':return viewAt(V(CX-12,6,CZ+15),28,C);
+      case 'vga':return L(PCIE.x+3,PCIE.z-1,28,V(0,.8,.6));
+      case 'c24':return L(ATX24.x-1,ATX24.z,12,V(.25,.92,.3));
+      case 'c8':return L(EPS.x,EPS.z,14,V(0,.92,.38));
+      case 'fp':return L(FPH.x-1,FPH.z,12,V(.2,.92,.34));
+    }
+    return viewFor('case');
+  }
+  var camTween=null;
+  function goView(v,instant){
+    if(instant){controls.target.copy(v.tgt);camera.position.copy(v.pos);controls.update();return}
+    var t0=controls.target.clone(),p0=camera.position.clone();
+    if(camTween)camTween.dead=true;
+    var me=tw(1.0,function(k){if(me&&me.dead)return;controls.target.lerpVectors(t0,v.tgt,k);camera.position.lerpVectors(p0,v.pos,k)});
+    camTween=me;
+  }
+  api.resize=function(){try{resize()}catch(e){}};
+  api.setPanMode=function(on){
+    try{
+      if(controls.mouseButtons&&T.MOUSE){controls.mouseButtons.LEFT=on?T.MOUSE.PAN:T.MOUSE.ROTATE;controls.mouseButtons.RIGHT=on?T.MOUSE.ROTATE:T.MOUSE.PAN}
+      if(controls.touches&&T.TOUCH){controls.touches.ONE=on?T.TOUCH.PAN:T.TOUCH.ROTATE;controls.touches.TWO=T.TOUCH.DOLLY_PAN}
+    }catch(e){}
+  };
+  api.pan=function(dx,dy){
+    var fwd=controls.target.clone().sub(camera.position);
+    var dist=fwd.length();
+    var right=new T.Vector3().crossVectors(fwd,camera.up).normalize();
+    var up=new T.Vector3().crossVectors(right,fwd).normalize();
+    var off=right.multiplyScalar(dx*dist*.22).add(up.multiplyScalar(dy*dist*.22));
+    var t0=controls.target.clone(),p0=camera.position.clone();
+    var t1=t0.clone().add(off),p1=p0.clone().add(off);
+    if(camTween)camTween.dead=true;
+    var me=tw(.28,function(k){if(me&&me.dead)return;controls.target.lerpVectors(t0,t1,k);camera.position.lerpVectors(p0,p1,k)});
+    camTween=me;
+  };
+  api.zoom=function(f){
+    var off=camera.position.clone().sub(controls.target);
+    var d=off.length(),nd=Math.max(7,Math.min(260,d*f));
+    var p0=camera.position.clone(),p1=controls.target.clone().add(off.multiplyScalar(nd/d));
+    if(camTween)camTween.dead=true;
+    var me=tw(.3,function(k){if(me&&me.dead)return;camera.position.lerpVectors(p0,p1,k)});
+    camTween=me;
+  };
+  api.focus=function(name,instant){goView(viewFor(name),instant)};
+  api.focusItem=function(item,instant){goView(itemView(item),instant)};
+
+  function resize(){
+    var w=container.clientWidth,h=container.clientHeight;if(!w||!h)return;
+    renderer.setSize(w,h,false);camera.aspect=w/h;camera.updateProjectionMatrix();
+  }
+  var ro=null;
+  if(window.ResizeObserver){ro=new ResizeObserver(resize);ro.observe(container)}else window.addEventListener('resize',resize);
+  resize();api.focus('work',true);
+
+  /* ===== Pointer ===== */
+  var ray=new T.Raycaster(),mouse=new T.Vector2();
+  function setMouse(e){var r=canvas.getBoundingClientRect();mouse.x=((e.clientX-r.left)/r.width)*2-1;mouse.y=-((e.clientY-r.top)/r.height)*2+1;ray.setFromCamera(mouse,camera)}
+  function selectable(p){if(p.key==='paste'&&p.used)return false;return p.loc==='home'||(p.key==='mobo'&&p.loc==='bench')}
+  function pickPart(e){
+    setMouse(e);var roots=[];
+    Object.keys(P).forEach(function(k){if(selectable(P[k]))roots.push(P[k].root)});
+    var hs=ray.intersectObjects(roots,true);
+    for(var i=0;i<hs.length;i++){
+      var o=hs[i].object;if(o.userData.isHit)continue;
+      while(o&&!o.userData.partKey)o=o.parent;
+      if(o)return P[o.userData.partKey];
+    }
+    return null;
+  }
+  function pickSlot(e){
+    setMouse(e);var list=hitList.filter(function(m){return hits[m.userData.slot].enabled});
+    var hs=ray.intersectObjects(list,false);
+    return hs.length?hs[0].object.userData.slot:null;
+  }
+  var down=null;
+  canvas.addEventListener('pointerdown',function(e){
+    if(busy)return;
+    if(e.pointerType==='mouse'&&e.button!==0)return;
+    var slotFirst=armed?pickSlot(e):null;
+    var p=slotFirst?null:pickPart(e);
+    down={x:e.clientX,y:e.clientY,p:p,slot:slotFirst,id:e.pointerId,moved:false,allowed:p?cb.canTouch(p.item):false};
+    if(p&&down.allowed){controls.enabled=false}
+  });
+  canvas.addEventListener('pointermove',function(e){
+    if(down&&down.p&&down.allowed){
+      var dx=e.clientX-down.x,dy=e.clientY-down.y;
+      if(!dragging&&(dx*dx+dy*dy)>64){
+        var ok=cb.onDragStart(down.p.item);
+        if(ok){
+          dragging=partFor(down.p.item);
+          if(dragging.root.parent!==scene)scene.attach(dragging.root);
+          if(selPart&&selPart!==dragging){setGlow(selPart,false)}
+          selPart=dragging;sel=down.p.item;armed=true;dragging.noFollow=true;setGlow(dragging,true);
+        }else{down=null;controls.enabled=true;return}
+      }
+      if(dragging){
+        setMouse(e);
+        var pl=new T.Plane(V(0,1,0),-DRAG_Y),pt=new T.Vector3();
+        if(ray.ray.intersectPlane(pl,pt)){dragging.root.position.set(pt.x,DRAG_Y,pt.z)}
+        var target=dragging.key==='mobo'?ID:ID;
+        dragging.root.quaternion.slerp(target,.18);
+        hover=pickSlot(e);canvas.style.cursor='grabbing';
+      }
+      return;
+    }
+    if(e.pointerType==='mouse'&&!down){
+      var slot=armed?pickSlot(e):null;hover=slot;
+      canvas.style.cursor=slot?'pointer':(pickPart(e)?'grab':'');
+    }
+  });
+  function end(e){
+    if(!down)return;
+    var d=down;down=null;controls.enabled=true;canvas.style.cursor='';
+    if(dragging){
+      var slot=pickSlot(e);var it=sel;
+      dragging=null;hover=null;
+      cb.onDrop(it,slot);return;
+    }
+    var moved=Math.hypot(e.clientX-d.x,e.clientY-d.y)>8;
+    if(moved)return;
+    if(d.slot){cb.onSlotTap(d.slot);return}
+    if(d.p){cb.onPartTap(d.p.item);return}
+    var s2=pickSlot(e);if(s2)cb.onSlotTap(s2);
+  }
+  canvas.addEventListener('pointerup',end);
+  canvas.addEventListener('pointercancel',function(){if(dragging){api.cancelDrag()}down=null;controls.enabled=true});
+  canvas.addEventListener('pointerleave',function(){hover=null});
+
+  /* ===== Rak samping (dock) yang mengikuti kamera ===== */
+  var dockOn=true,dockOrder=DEFS.map(function(d){return d.key});
+  var RX=Q(Math.PI/2,0,0);
+  api.setDock=function(on){};/* rak samping selalu otomatis, tanpa tombol on/off */
+  api.setOrder=function(items){
+    var idx=function(k){var i=items.indexOf(P[k].item);return i<0?99:i};
+    dockOrder=DEFS.map(function(d){return d.key}).sort(function(a,b){return idx(a)-idx(b)});
+  };
+  function isCable(p){return p.key==='c24'||p.key==='c8'||p.key==='fp'}
+    /* Rak 1 (komponen): otomatis aktif setelah motherboard diletakkan di alas anti-statis.
+     Rak 2 (kabel): baru muncul setelah semua komponen rak 1 terpasang. Suntikan thermal paste hilang setelah dipakai. */
+  function rack1Done(){
+    return Object.keys(P).every(function(k){var q=P[k];if(isCable(q)||k==='mobo')return true;if(k==='paste'&&q.used)return true;return q.loc!=='home'});
+  }
+  function isDocked(p){
+    if(P.mobo.loc==='home')return false;
+    if(p.key==='paste'&&p.used)return false;
+    if(isCable(p))return rack1Done();
+    return true;
+  }
+  function updateDock(dt){
+    var k=1-Math.exp(-dt*11);
+    var fwd=controls.target.clone().sub(camera.position);var dist=Math.max(fwd.length(),1);fwd.normalize();
+    var right=new T.Vector3().crossVectors(fwd,camera.up).normalize();
+    var upS=new T.Vector3().crossVectors(right,fwd).normalize();
+    var dd=Math.max(5,dist*.55);
+    var halfH=Math.tan(camera.fov*Math.PI/360)*dd,halfW=halfH*camera.aspect;
+    var center=camera.position.clone().add(fwd.clone().multiplyScalar(dd));
+    var narrow=camera.aspect<1,tile=narrow?Math.min(halfH*.19,halfW*.2):Math.min(halfH*.22,halfW*.14);
+    var cols=narrow?[.56,.86]:[.52,.74,.94],ncol=cols.length;
+    function ndc(x,y){return center.clone().add(right.clone().multiplyScalar(x*halfW)).add(upS.clone().multiplyScalar(y*halfH))}
+    function drive(p,pos,quat,size){
+      if(p.noFollow||dragging===p)return;
+      var s=Math.min(1.5,size/p.maxDim);
+      var off=p.localCenter.clone().applyQuaternion(quat).multiplyScalar(s);
+      var tp=pos.clone().sub(off);
+      p.root.position.lerp(tp,k);p.root.quaternion.slerp(quat,k);
+      var ns=p.root.scale.x+(s-p.root.scale.x)*k;p.root.scale.set(ns,ns,ns);
+    }
+    function settle(p,pos,quat){
+      if(p.noFollow||dragging===p)return;
+      p.root.position.lerp(pos,k);p.root.quaternion.slerp(quat,k);
+      var ns=p.root.scale.x+(1-p.root.scale.x)*k;p.root.scale.set(ns,ns,ns);
+    }
+    var i=0;
+    dockOrder.forEach(function(key){
+      var p=P[key];if(p.loc!=='home')return;
+      var useDock=isDocked(p);
+      if(p===selPart){
+        if(useDock)drive(p,ndc(narrow?.7:.74,.70),ID,tile*1.6);
+        else settle(p,p.home.pos.clone().add(V(0,3,0)),p.home.quat);
+        return;
+      }
+      if(useDock){
+        var col=i%ncol,row=Math.floor(i/ncol);i++;
+        var q=camera.quaternion.clone().multiply(RX).multiply(p.home.quat);
+        drive(p,ndc(cols[col],.38-row*(narrow?.3:.26)),q,tile);
+      }else settle(p,p.home.pos,p.home.quat);
+    });
+    var mb=P.mobo;
+    if(mb.loc==='bench')settle(mb,MOBO_BENCH.clone().add(V(0,(mb===selPart&&!dockOn)?3:0,0)),ID);
+  }
+
+  /* ===== Loop ===== */
+  var raf=0,last=performance.now(),alive=true;
+  function frame(now){
+    if(!alive)return;raf=requestAnimationFrame(frame);
+    var dt=Math.min(.05,(now-last)/1000);last=now;
+    stepTweens(now);
+    if(power){
+      fans.forEach(function(f){f.rotation.z+=dt*16});
+      rgbs.forEach(function(m){m.emissive.setHSL((now*.0003)%1,1,.5)});
+    }
+    Object.keys(hits).forEach(function(id){
+      var h=hits[id],m=h.mesh.material,e=h.edges.material;
+      var tgt=0,edge=0,col=0x4d7cff;
+      if(h.enabled){
+        if(armed&&practice)edge=.45;
+        if(hover===id){tgt=.4;edge=1}
+        else if(practice&&armed&&hint===id){tgt=.2+.16*Math.sin(now*.007);edge=1;col=0x22c55e}
+      }
+      m.opacity+=(tgt-m.opacity)*.35;m.color.setHex(col);e.opacity=edge;e.color.setHex(col);
+    });
+    Object.keys(P).forEach(function(k){
+      var p=P[k];
+      var show=labelsOn&&!isDocked(p)&&p.loc==='home'&&p!==selPart&&!dragging&&p.root.visible;
+      p.label.visible=show;
+      if(show){p.label.position.set(p.root.position.x,p.home.top+2.6,p.root.position.z)}
+    });
+    if(tweens.length||dragging||cableDirty>0){updateCables();if(cableDirty>0)cableDirty--}
+    /* Di Rak 2 hanya kepala kabel yang tampil; badan kabel baru terlihat dan bergerak saat kabel diseret atau dipasang. */
+    cables.forEach(function(c){var q=P[c.key];c.mesh.visible=!(q.loc==='home'&&isDocked(q)&&!q.noFollow&&dragging!==q)});
+    controls.update();
+    updateDock(dt);
+    renderer.render(scene,camera);
+  }
+  api.setTheme(false);
+  api.sync(null===null?{mobo:'tray',cpu:false,paste:false,cooler:false,ram:[false,false,false,false],ssd:false,io:false,psu:false,vga:false,c24:false,c8:false,fp:false}:null);
+  updateCables();
+  raf=requestAnimationFrame(frame);
+
+  api._debug=function(){return{P:P,camera:camera,controls:controls,cables:cables}};
+  api.dispose=function(){
+    alive=false;cancelAnimationFrame(raf);clearInterval(screenState.timer);
+    if(ro)ro.disconnect();else window.removeEventListener('resize',resize);
+    controls.dispose();renderer.dispose();
+    if(canvas.parentNode)canvas.parentNode.removeChild(canvas);
+  };
+  return api;
+}
+window.Scene3D={create:create,supported:supported};
+})();
+
+</script>
+
+<script id="app">
+(function(){
+'use strict';
+var React=window.React,ReactDOM=window.ReactDOM;
+var useState=React.useState,useEffect=React.useEffect,useRef=React.useRef,useMemo=React.useMemo;
+var html=window.htm.bind(React.createElement);
+var SIM=window.SIM,LS=window.LS,PWA=window.PWA,AU=window.AU;
+
+/* ---------- Ikon gaya Lucide (inline agar tetap jalan offline) ---------- */
+var ICONS={
+  expand:'<path d="M8 3H5a2 2 0 0 0-2 2v3M21 8V5a2 2 0 0 0-2-2h-3M3 16v3a2 2 0 0 0 2 2h3M16 21h3a2 2 0 0 0 2-2v-3"/>',
+  shrink:'<path d="M8 3v3a2 2 0 0 1-2 2H3M21 8h-3a2 2 0 0 1-2-2V3M3 16h3a2 2 0 0 1 2 2v3M16 21v-3a2 2 0 0 1 2-2h3"/>',
+  cpu:'<rect x="4" y="4" width="16" height="16" rx="2"/><rect x="9" y="9" width="6" height="6"/><path d="M15 2v2M15 20v2M2 15h2M2 9h2M20 15h2M20 9h2M9 2v2M9 20v2"/>',
+  case:'<rect x="5" y="2" width="14" height="20" rx="2"/><path d="M9 6h6M9 9h6"/><circle cx="12" cy="16" r="2"/>',
+  zap:'<polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>',
+  mobo:'<rect x="3" y="3" width="18" height="18" rx="2"/><path d="M7 7h4v4H7zM15 7h2M15 11h2M7 15h10"/>',
+  fan:'<circle cx="12" cy="12" r="2"/><path d="M12 10c0-4 1-7 3-7s2 3-1 6M14 12c4 0 7 1 7 3s-3 2-6-1M12 14c0 4-1 7-3 7s-2-3 1-6M10 12c-4 0-7-1-7-3s3-2 6 1"/>',
+  ram:'<path d="M6 19v-3M10 19v-3M14 19v-3M18 19v-3M8 11V9M16 11V9M12 11V9M2 15h20M2 7a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v1.1a2 2 0 0 0 0 3.837V17a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2v-5.1a2 2 0 0 0 0-3.837Z"/>',
+  disk:'<line x1="22" x2="2" y1="12" y2="12"/><path d="M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/><line x1="6" x2="6.01" y1="16" y2="16"/><line x1="10" x2="10.01" y1="16" y2="16"/>',
+  gpu:'<rect x="2" y="7" width="20" height="10" rx="2"/><circle cx="8" cy="12" r="2.5"/><circle cx="15" cy="12" r="2.5"/><path d="M5 17v3M2 20h6"/>',
+  cable:'<path d="M4 9a2 2 0 0 1-2-2V5h6v2a2 2 0 0 1-2 2Z"/><path d="M3 5V3M7 5V3M19 15V6.5a3.5 3.5 0 0 0-7 0v11a3.5 3.5 0 0 1-7 0V9"/><path d="M17 21v-2M21 21v-2M22 19h-6v-2a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2Z"/>',
+  plug:'<path d="M12 22v-5M9 8V2M15 8V2M18 8v5a4 4 0 0 1-4 4h-4a4 4 0 0 1-4-4V8Z"/>',
+  drop:'<path d="M12 22a7 7 0 0 0 7-7c0-2-1-3.9-3-5.5s-3.5-4-4-6.5c-.5 2.5-2 4.9-4 6.5C6 11.1 5 13 5 15a7 7 0 0 0 7 7z"/>',
+  shield:'<path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/><path d="m9 12 2 2 4-4"/>',
+  x:'<path d="M18 6 6 18M6 6l12 12"/>',
+  check:'<path d="M20 6 9 17l-5-5"/>',
+  warn:'<path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3"/><path d="M12 9v4M12 17h.01"/>',
+  info:'<circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/>',
+  download:'<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/>',
+  wifi:'<path d="M12 20h.01M2 8.82a15 15 0 0 1 20 0M5 12.859a10 10 0 0 1 14 0M8.5 16.429a5 5 0 0 1 7 0"/>',
+  wifioff:'<path d="M12 20h.01M8.5 16.429a5 5 0 0 1 7 0M5 12.859a10 10 0 0 1 5.17-2.69M19 12.859a10 10 0 0 0-2.007-1.523M2 8.82a15 15 0 0 1 4.177-2.643M22 8.82a15 15 0 0 0-11.288-3.764M2 2l20 20"/>',
+  sun:'<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/>',
+  moon:'<path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/>',
+  reset:'<path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/>',
+  book:'<path d="M12 7v14M3 18a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h5a4 4 0 0 1 4 4 4 4 0 0 1 4-4h5a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1h-6a3 3 0 0 0-3 3 3 3 0 0 0-3-3z"/>',
+  wrench:'<path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94z"/>',
+  target:'<circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/>',
+  move:'<path d="M5 9l-3 3 3 3M9 5l3-3 3 3M15 19l-3 3-3-3M19 9l3 3-3 3M2 12h20M12 2v20"/>',
+  plus:'<path d="M12 5v14M5 12h14"/>',
+  minus:'<path d="M5 12h14"/>',
+  power:'<path d="M12 2v10M18.4 6.6a9 9 0 1 1-12.77.04"/>',
+  chevron:'<path d="m6 9 6 6 6-6"/>',
+  clock:'<circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/>',
+  bulb:'<path d="M15 14c.2-1 .7-1.7 1.5-2.5 1-.9 1.5-2.2 1.5-3.5A6 6 0 0 0 6 8c0 1 .2 2.2 1.5 3.5.7.7 1.3 1.5 1.5 2.5M9 18h6M10 22h4"/>',
+  trash:'<path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>',
+  sound:'<path d="M11 4.702a.705.705 0 0 0-1.203-.498L6.413 7.587A1.4 1.4 0 0 1 5.416 8H3a1 1 0 0 0-1 1v6a1 1 0 0 0 1 1h2.416a1.4 1.4 0 0 1 .997.413l3.383 3.384A.705.705 0 0 0 11 19.298z"/><path d="M16 9a5 5 0 0 1 0 6M19.364 18.364a9 9 0 0 0 0-12.728"/>',
+  mute:'<path d="M11 4.702a.705.705 0 0 0-1.203-.498L6.413 7.587A1.4 1.4 0 0 1 5.416 8H3a1 1 0 0 0-1 1v6a1 1 0 0 0 1 1h2.416a1.4 1.4 0 0 1 .997.413l3.383 3.384A.705.705 0 0 0 11 19.298z"/><path d="m22 9-6 6M16 9l6 6"/>',
+  monitor:'<rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/>'
+};
+function Icon(p){return html`<svg className=${'ic '+(p.cls||'')} width=${p.s||18} height=${p.s||18} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" dangerouslySetInnerHTML=${{__html:ICONS[p.n]||''}} />`}
+
+/* ---------- Materi: komponen hardware ---------- */
+var HW=[
+ {id:'case',nama:'Casing PC',ikon:'case',ringkas:'Rangka pelindung, dudukan, dan pengatur aliran udara seluruh komponen.',
+  fungsi:'Casing adalah rangka yang menampung dan melindungi semua komponen dari debu, benturan, dan sentuhan langsung. Casing juga mengatur aliran udara pendingin serta menyediakan tombol power, tombol reset, port USB, dan jack audio di bagian depan (front panel).',
+  cara:'Udara dingin masuk dari panel depan atau bawah, melewati komponen panas seperti CPU dan VGA, lalu dibuang lewat kipas belakang dan atas. Motherboard dipasang pada standoff kuningan di baki casing sehingga papan tidak menyentuh pelat logam. Jika menyentuh, terjadi hubungan pendek.',
+  spek:[['Form factor','ATX (305 x 244 mm), Micro-ATX (244 x 244 mm), Mini-ITX (170 x 170 mm)'],['Dimensi maksimum','Tinggi CPU cooler dan panjang VGA yang muat'],['Airflow','Posisi dan jumlah kipas (intake depan, exhaust belakang/atas)'],['Bay drive','Dudukan SSD 2,5 inci dan HDD 3,5 inci'],['Port depan','USB 3.x, USB-C, audio HD, tombol power dan reset']],
+  tips:['Pasang standoff sesuai lubang form factor motherboard. Standoff berlebih di bawah papan bisa menyebabkan korsleting.','Sisi pelat logam casing bisa tajam. Pegang dengan hati-hati atau kenakan sarung tangan tipis non-statis.','Simpan sekrup di wadah magnetik agar tidak jatuh ke dalam casing.','Sambungkan gelang ESD ke bagian logam casing yang tidak dicat sebelum menyentuh komponen.'],sim:'Bay motherboard, I/O Shield, dan Bay PSU'},
+ {id:'psu',nama:'Power Supply Unit (PSU)',ikon:'zap',ringkas:'Mengubah listrik AC dari PLN menjadi arus DC untuk semua komponen.',
+  fungsi:'PSU mengubah listrik bolak-balik (AC) 220V dari stopkontak menjadi arus searah (DC) bertegangan 3,3V, 5V, dan 12V yang dibutuhkan komponen komputer.',
+  cara:'Listrik AC disearahkan dan diturunkan tegangannya oleh rangkaian di dalam PSU, lalu disalurkan lewat bundel kabel ke motherboard, CPU, VGA, dan drive. Kipas PSU membuang panas hasil konversi. Sertifikasi 80 PLUS menunjukkan efisiensi minimal 80% sehingga lebih sedikit energi terbuang menjadi panas.',
+  spek:[['Daya (Watt)','Pilih sesuai total kebutuhan komponen, dengan cadangan sekitar 20 sampai 30%'],['Sertifikasi 80 PLUS','Standard, Bronze, Silver, Gold, Platinum, Titanium (makin tinggi makin efisien)'],['Kabel 24-pin ATX','Daya utama motherboard'],['Kabel 8-pin CPU (EPS 4+4)','Daya khusus processor'],['Kabel PCIe (6+2 pin)','Daya tambahan VGA'],['Kabel SATA','Daya SSD/HDD SATA']],
+  tips:['Pastikan saklar PSU OFF dan kabel AC dicabut selama merakit.','Konektor memiliki kunci bentuk, jangan dipaksa. Jika tidak masuk, kemungkinan arah atau jenis konektornya salah.','Jangan memakai kabel modular dari merek atau seri PSU lain. Pinout-nya bisa berbeda dan merusak komponen.','Kapasitor PSU menyimpan muatan. Jangan membuka casing PSU.'],sim:'Bay PSU (bagian bawah casing)'},
+ {id:'mobo',nama:'Motherboard',ikon:'mobo',ringkas:'Papan induk yang menghubungkan seluruh komponen.',
+  fungsi:'Motherboard adalah papan sirkuit utama yang menjadi tempat menancapkan CPU, RAM, VGA, dan penyimpanan, sekaligus menyediakan jalur data antar komponen.',
+  cara:'Chipset mengatur lalu lintas data antara CPU, RAM, slot ekspansi, dan penyimpanan lewat jalur (trace) tembaga di dalam papan berlapis. Regulator tegangan (VRM) mengubah 12V dari PSU menjadi tegangan kecil yang stabil untuk CPU.',
+  spek:[['Socket CPU','Contoh: LGA1700 atau LGA1851 (Intel), AM5 (AMD)'],['Chipset','Contoh: seri B, H, Z (Intel); seri A, B, X (AMD)'],['Slot RAM (DIMM)','DDR4 atau DDR5, biasanya 2 atau 4 slot'],['Slot PCIe','Slot x16 untuk VGA, x1 untuk kartu tambahan'],['Penyimpanan','Port SATA dan slot M.2 NVMe'],['Header','Front Panel, USB, audio, kipas (CPU_FAN, SYS_FAN)']],
+  tips:['Letakkan motherboard di atas kardus boxnya atau alas anti-statis, jangan di atas meja logam.','Pegang pada tepi papan, hindari menyentuh kontak dan solder.','Baca manual motherboard untuk letak slot RAM prioritas dan susunan header front panel.','Tekan komponen merata agar papan tidak melengkung.'],sim:'Meja kerja, lalu bay motherboard casing'},
+ {id:'cpu',nama:'Processor / CPU',ikon:'cpu',ringkas:'Otak komputer yang mengeksekusi instruksi program.',
+  fungsi:'CPU (Central Processing Unit) menjalankan instruksi program, melakukan perhitungan, dan mengendalikan alur data seluruh sistem.',
+  cara:'CPU mengambil instruksi dari memori, mendekode, lalu mengeksekusinya jutaan hingga miliaran kali per detik (diukur dalam GHz). Banyaknya core dan thread menentukan berapa tugas yang bisa dikerjakan bersamaan. Intel dan AMD memakai arsitektur dan socket berbeda sehingga tidak saling kompatibel.',
+  spek:[['Merek/arsitektur','Intel Core atau AMD Ryzen'],['Jumlah core/thread','Contoh: 6 core / 12 thread'],['Clock speed','Base dan boost clock (GHz)'],['Tipe kontak','LGA: pin ada di socket (Intel, AMD AM5). PGA: pin ada di CPU (contoh AMD AM4)'],['TDP','Perkiraan panas yang harus dibuang cooler']],
+  tips:['Cocokkan segitiga emas di sudut CPU dengan tanda segitiga di socket. Jika sejajar, CPU turun sendiri tanpa ditekan.','Jangan menyentuh pin (pada LGA, pin ada di socket) atau kontak emas. Pin yang bengkok sulit diperbaiki.','Tuas socket diangkat penuh sebelum CPU diletakkan, dan dikunci setelahnya.','Pegang CPU di tepinya saja dan gunakan gelang ESD.'],sim:'Socket CPU'},
+ {id:'cooler',nama:'CPU Cooler & Thermal Paste',ikon:'fan',ringkas:'Menyerap dan membuang panas CPU agar tidak overheat.',
+  fungsi:'CPU Cooler (heatsink dan kipas) menyerap panas dari CPU lalu membuangnya ke udara. Thermal paste mengisi celah mikroskopis antara permukaan CPU dan heatsink agar panas berpindah efisien.',
+  cara:'Panas dari CPU merambat melalui pasta termal ke dasar tembaga heatsink, lalu ke sirip aluminium. Kipas meniupkan udara melalui sirip sehingga panas terbuang. Tanpa pasta, celah udara menghambat perpindahan panas.',
+  spek:[['Tipe','Air cooler (heatsink + kipas) atau liquid cooler (AIO)'],['Kompatibilitas socket','Harus mendukung socket CPU dan braketnya'],['TDP rating','Harus lebih besar dari TDP CPU'],['Header kipas','CPU_FAN 4-pin (PWM)'],['Thermal paste','Pasta silikon atau logam cair']],
+  tips:['Oleskan pasta sebesar biji kacang polong di tengah CPU. Jangan berlebihan karena menghambat panas dan meluber.','Lepas lapisan plastik pelindung dasar heatsink sebelum dipasang.','Kencangkan sekrup bertahap secara bersilangan agar tekanan merata.','Sambungkan kabel kipas ke CPU_FAN. Jika tidak, BIOS dapat memberi peringatan CPU fan error.','Beberapa cooler sudah memiliki pasta bawaan. Jangan dioles dua kali.'],sim:'Di atas CPU (area socket CPU)'},
+ {id:'ram',nama:'RAM (Random Access Memory)',ikon:'ram',ringkas:'Memori kerja sementara yang sangat cepat.',
+  fungsi:'RAM menyimpan data dan program yang sedang dijalankan agar CPU dapat mengaksesnya dengan sangat cepat. Isinya hilang saat komputer dimatikan.',
+  cara:'CPU membaca dan menulis data ke RAM jauh lebih cepat dibanding ke penyimpanan. Dengan konfigurasi Dual Channel, dua modul bekerja lewat dua jalur sekaligus sehingga bandwidth berlipat.',
+  spek:[['Generasi','DDR4 atau DDR5. Tidak saling kompatibel karena letak lekukan (notch) berbeda'],['Kapasitas','Contoh: 8 GB, 16 GB, 32 GB'],['Kecepatan','Contoh: 3200 MT/s (DDR4), 5600 MT/s (DDR5)'],['Konfigurasi','Single atau Dual Channel (umumnya slot A2 dan B2)']],
+  tips:['Sejajarkan lekukan (notch) modul dengan sekat di slot. Jangan dipaksa jika tidak masuk.','Buka klip pengunci slot, lalu tekan modul merata di kedua ujung sampai klip klik sendiri.','Untuk Dual Channel, pakai slot sesuai manual (umumnya A2 dan B2).','Pegang modul di tepinya dan hindari menyentuh kontak emas.'],sim:'Slot DIMM A2 (dan B2 untuk Dual Channel)'},
+ {id:'storage',nama:'Storage (SSD NVMe M.2 & SATA)',ikon:'disk',ringkas:'Penyimpanan permanen untuk sistem operasi dan data.',
+  fungsi:'Storage menyimpan sistem operasi, aplikasi, dan file secara permanen walau komputer dimatikan.',
+  cara:'SSD menyimpan data di chip flash tanpa bagian bergerak sehingga jauh lebih cepat daripada HDD yang memakai piringan berputar. SSD NVMe memakai jalur PCIe langsung ke CPU, sedangkan SATA SSD memakai antarmuka SATA yang lebih lambat.',
+  spek:[['SSD NVMe M.2','Sekitar 3.500 MB/s (PCIe Gen3) sampai 7.000 MB/s atau lebih (Gen4/Gen5)'],['SSD SATA 2,5 inci','Sekitar 550 MB/s, memakai kabel data dan kabel daya SATA'],['HDD 3,5 inci','Sekitar 100 sampai 200 MB/s, kapasitas besar dan murah'],['Panjang M.2','2230, 2242, 2260, 2280 (mm)']],
+  tips:['Masukkan SSD M.2 miring sekitar 30 derajat, tekan rata, lalu kunci dengan sekrup kecil.','Pasang SSD M.2 sebelum VGA karena slotnya sering tertutup kartu grafis.','Lepas plastik pelindung pada thermal pad heatsink M.2 jika ada.','Perhatikan jenis slot M.2: ada yang mendukung SATA saja, ada yang NVMe.','Jauhkan obeng magnetik kuat dari HDD.'],sim:'Slot M.2 (NVMe)'},
+ {id:'vga',nama:'VGA Card / GPU',ikon:'gpu',ringkas:'Pengolah grafis untuk tampilan, game, desain, dan komputasi paralel.',
+  fungsi:'VGA Card (GPU) memproses grafis dan mengirim gambar ke monitor. Ia juga dipakai untuk render, desain, dan komputasi paralel.',
+  cara:'GPU memiliki ribuan core kecil yang mengerjakan banyak perhitungan grafis serentak. Kartu terhubung lewat slot PCIe x16 dan memiliki memori sendiri (VRAM). Kartu berdaya besar membutuhkan kabel daya tambahan dari PSU.',
+  spek:[['Slot','PCIe x16'],['VRAM','Contoh: 8 GB, 12 GB, 16 GB'],['Daya tambahan','6+2 pin PCIe atau konektor 12V-2x6 pada kartu terbaru'],['Output','HDMI dan DisplayPort'],['Dimensi','Panjang dan tebal kartu harus muat di casing']],
+  tips:['Lepas penutup slot casing yang sejajar sebelum memasang kartu.','Tekan kartu lurus ke bawah sampai pengunci slot di ujung klik.','Kencangkan bracket kartu dengan sekrup ke casing.','Sambungkan kabel PCIe dari PSU. Pastikan terpasang penuh sampai klik, terutama konektor 12V-2x6.','Colokkan kabel monitor ke port VGA, bukan port video motherboard.'],sim:'Slot PCIe x16'},
+ {id:'fp',nama:'Kabel Front Panel & Manajemen Kabel',ikon:'cable',ringkas:'Menghubungkan tombol dan lampu casing ke motherboard.',
+  fungsi:'Kabel front panel menyambungkan tombol power, tombol reset, lampu indikator, serta port USB dan audio di depan casing ke motherboard.',
+  cara:'Setiap kabel kecil membawa satu sinyal: PWR_SW menyambungkan dua pin ketika tombol ditekan sehingga motherboard menyala. RESET_SW mengulang sistem. HDD_LED dan PWR_LED menyalakan lampu dan memiliki polaritas (+ dan -).',
+  spek:[['PWR_SW','Tombol power, tanpa polaritas'],['RESET_SW','Tombol reset, tanpa polaritas'],['HDD_LED','Lampu aktivitas penyimpanan (+ / -)'],['PWR_LED','Lampu indikator power (+ / -)'],['USB 3.0','Header 19/20-pin'],['USB 2.0','Header 9-pin'],['HD Audio','Header 9-pin']],
+  tips:['Baca silkscreen dan manual motherboard untuk letak pin. Susunannya bisa berbeda tiap merek.','Kabel LED berpolaritas: kabel berwarna ke +, kabel hitam ke -. Jika terbalik, lampu tidak menyala (tidak merusak).','Rapikan kabel di balik baki motherboard memakai cable tie atau velcro agar airflow lancar.','Jangan menekuk kabel tajam atau menariknya pada kabelnya, tarik dari konektornya.','Hindari menaruh kabel di dekat kipas atau heatsink.'],sim:'Header Front Panel (mini-simulasi)'}
+];
+
+var SOP=[
+ {id:'p1',judul:'Persiapan dan K3LH',steps:[
+  ['Siapkan area kerja','Meja bersih, kering, terang, dan berventilasi baik. Alasi dengan bahan non-konduktif (kain atau karpet anti-statis).'],
+  ['Pakai gelang anti-statis (ESD)','Jepit ujung gelang pada bagian logam casing yang tidak dicat agar muatan listrik statis tubuh tersalurkan.'],
+  ['Lepas perhiasan logam','Cincin, gelang, dan jam tangan bisa menghantarkan listrik dan menggores komponen.'],
+  ['Siapkan alat','Obeng Phillips magnetik (nomor 2), cable tie, wadah sekrup. Jauhkan magnet kuat dari HDD.'],
+  ['Pastikan PSU OFF dan kabel AC dicabut','Selama merakit, tidak boleh ada listrik yang mengalir.'],
+  ['Baca manual motherboard','Cari letak slot RAM prioritas, header front panel, dan petunjuk khusus tiap komponen.']]},
+ {id:'p2',judul:'Perakitan di luar casing',steps:[
+  ['Letakkan motherboard di atas kardus atau alas anti-statis','Hindari menaruhnya langsung di meja logam atau karpet.'],
+  ['Pasang CPU','Angkat tuas socket, sejajarkan segitiga emas, letakkan CPU tanpa ditekan, kunci tuas.'],
+  ['Oleskan thermal paste','Satu titik seukuran biji kacang polong di tengah CPU.'],
+  ['Pasang CPU cooler','Kencangkan bersilangan secara bertahap, sambungkan kabel ke header CPU_FAN.'],
+  ['Pasang RAM','Sejajarkan notch, tekan sampai klip klik. Gunakan slot A2 dan B2 untuk Dual Channel.'],
+  ['Pasang SSD NVMe M.2','Masukkan miring, tekan rata, kunci dengan sekrup M.2.']]},
+ {id:'p3',judul:'I/O Shield dan motherboard ke casing',steps:[
+  ['Pasang I/O Shield','Tekan dari dalam sampai keempat sisinya klik.'],
+  ['Cek standoff','Posisi standoff harus cocok dengan lubang motherboard. Jangan ada standoff berlebih.'],
+  ['Masukkan motherboard ke casing','Miringkan sedikit agar port masuk ke I/O Shield, lalu turunkan sejajar standoff.'],
+  ['Kencangkan sekrup motherboard','Bersilangan dan tidak terlalu keras agar papan tidak retak.']]},
+ {id:'p4',judul:'Pemasangan PSU dan storage',steps:[
+  ['Pasang PSU di bay-nya','Arah kipas mengikuti desain casing (menghadap lubang udara). Kunci dengan empat sekrup.'],
+  ['Pasang drive SATA (jika ada)','Kunci SSD 2,5 inci atau HDD 3,5 inci di bay, sambungkan kabel data dan daya SATA.']]},
+ {id:'p5',judul:'Pemasangan VGA Card',steps:[
+  ['Lepas penutup slot casing','Pilih penutup yang sejajar dengan slot PCIe x16.'],
+  ['Pasang VGA di slot PCIe x16','Tekan lurus sampai pengunci slot klik.'],
+  ['Kunci bracket VGA','Kencangkan sekrup bracket ke casing.'],
+  ['Sambungkan kabel daya VGA','Kabel PCIe dari PSU, pastikan terpasang penuh.']]},
+ {id:'p6',judul:'Kabel daya dan Front Panel',steps:[
+  ['Sambungkan kabel 24-pin ATX','Tekan sampai klip mengunci.'],
+  ['Sambungkan kabel CPU 8-pin (EPS)','Colokkan ke konektor di dekat socket CPU.'],
+  ['Sambungkan kabel Front Panel','PWR_SW, RESET_SW, HDD_LED, PWR_LED sesuai silkscreen. Perhatikan polaritas LED.'],
+  ['Sambungkan USB dan audio depan','Header USB 3.0, USB 2.0, dan HD Audio sesuai manual.'],
+  ['Rapikan kabel','Rapikan dengan cable tie dan sembunyikan di balik baki motherboard agar airflow lancar.']]},
+ {id:'p7',judul:'Uji nyala (POST)',steps:[
+  ['Periksa ulang rakitan','Pastikan tidak ada sekrup yang jatuh dan semua konektor terpasang penuh.'],
+  ['Sambungkan monitor, keyboard, dan kabel AC','Kabel monitor ke port VGA, bukan port motherboard.'],
+  ['Nyalakan saklar PSU lalu tekan tombol power','Amati kipas berputar, lampu menyala, dan bunyi beep POST.'],
+  ['Masuk BIOS (Del atau F2)','Periksa CPU, kapasitas RAM, SSD terdeteksi, dan suhu CPU normal.'],
+  ['Jika gagal, lakukan troubleshooting','Cek kabel 24-pin dan 8-pin, reseat RAM, dan cek tombol power ke header front panel.']]}
+];
+
+/* ---------- Util ---------- */
+function fmtTime(s){var m=Math.floor(s/60),r=s%60;return (m<10?'0':'')+m+':'+(r<10?'0':'')+r}
+function fmtDate(iso){try{var d=new Date(iso);return d.toLocaleDateString('id-ID',{day:'2-digit',month:'short',year:'numeric'})+' '+d.toLocaleTimeString('id-ID',{hour:'2-digit',minute:'2-digit'})}catch(e){return iso}}
+
+function Modal(p){
+  useEffect(function(){
+    var f=function(e){if(e.key==='Escape')p.onClose()};
+    window.addEventListener('keydown',f);
+    var prev=document.body.style.overflow;document.body.style.overflow='hidden';
+    return function(){window.removeEventListener('keydown',f);document.body.style.overflow=prev};
+  },[]);
+  return html`<div className="modal-bg" onClick=${function(e){if(e.target===e.currentTarget)p.onClose()}}>
+    <div className="modal" role="dialog" aria-modal="true" aria-label=${p.label}>${p.children}</div>
+  </div>`;
+}
+
+/* ---------- Materi ---------- */
+function HWModal(p){
+  var h=p.h;
+  return html`<${Modal} label=${h.nama} onClose=${p.onClose}>
+    <div className="modal-h">
+      <div style=${{display:'flex',gap:12,alignItems:'center'}}>
+        <div className="mico"><${Icon} n=${h.ikon} s=${26}/></div>
+        <div><h2>${h.nama}</h2><p style=${{color:'var(--muted)',fontSize:14}}>${h.ringkas}</p></div>
+      </div>
+      <button className="btn sm" onClick=${p.onClose} aria-label="Tutup"><${Icon} n="x" s=${18}/></button>
+    </div>
+    <h3>Fungsi</h3><p>${h.fungsi}</p>
+    <h3>Cara kerja</h3><p>${h.cara}</p>
+    <h3>Spesifikasi penting</h3>
+    <dl className="spec">${h.spek.map(function(s,i){return html`<${React.Fragment} key=${i}><dt>${s[0]}</dt><dd>${s[1]}</dd><//>`})}</dl>
+    <div className="k3"><b><${Icon} n="shield" s=${18}/> Tips pemasangan dan K3LH</b>
+      <ul>${h.tips.map(function(t,i){return html`<li key=${i}>${t}</li>`})}</ul></div>
+    <p className="link-sim"><${Icon} n="wrench" s=${16}/> Di simulasi, komponen ini dipasang di: ${h.sim}.</p>
+  <//>`;
+}
+function Materi(p){
+  var prog=p.prog;
+  var _s=useState('hw'),sub=_s[0],setSub=_s[1];
+  var _o=useState(null),open=_o[0],setOpen=_o[1];
+  var _e=useState({p1:true}),exp=_e[0],setExp=_e[1];
+  var read=prog.dibaca||[];
+  var done=prog.sop||{};
+  var totalSteps=SOP.reduce(function(a,b){return a+b.steps.length},0);
+  var doneSteps=Object.keys(done).filter(function(k){return done[k]}).length;
+  function openHW(h){setOpen(h);if(read.indexOf(h.id)<0)p.setProg(function(o){return Object.assign({},o,{dibaca:(o.dibaca||[]).concat([h.id])})})}
+  function toggleStep(k){p.setProg(function(o){var s=Object.assign({},o.sop||{});s[k]=!s[k];return Object.assign({},o,{sop:s})})}
+  return html`<div>
+    <div className="sub">
+      <div className="seg" role="group" aria-label="Sub-menu materi">
+        <button aria-pressed=${sub==='hw'} onClick=${function(){setSub('hw')}}><${Icon} n="cpu" s=${17}/> Pengenalan Komponen</button>
+        <button aria-pressed=${sub==='sop'} onClick=${function(){setSub('sop')}}><${Icon} n="shield" s=${17}/> SOP Perakitan (K3LH)</button>
+      </div>
+    </div>
+    ${sub==='hw'?html`<div>
+      <div className="sec-h">
+        <div><h2>Pengenalan Komponen Perangkat Keras</h2><p>Ketuk kartu untuk membaca fungsi, cara kerja, spesifikasi penting, dan tips pemasangan yang aman.</p></div>
+        <div style=${{minWidth:180}}><div style=${{fontSize:13,marginBottom:4}} className="mono">${read.length} / ${HW.length} dibaca</div><div className="bar"><i style=${{width:(read.length/HW.length*100)+'%'}}></i></div></div>
+      </div>
+      <div className="cards">${HW.map(function(h){
+        var r=read.indexOf(h.id)>=0;
+        return html`<button key=${h.id} className="hw" onClick=${function(){openHW(h)}}>
+          <div className="top"><div className="ico"><${Icon} n=${h.ikon} s=${24}/></div>${r?html`<span className="pill ok"><${Icon} n="check" s=${13}/> Dibaca</span>`:html`<span className="pill">Baru</span>`}</div>
+          <h3>${h.nama}</h3><p>${h.ringkas}</p>
+          <span className="go">Buka detail <${Icon} n="chevron" s=${15} cls="-rotate-90"/></span>
+        </button>`})}</div>
+    </div>`:html`<div>
+      <div className="sec-h">
+        <div><h2>Panduan dan SOP Perakitan PC (K3LH)</h2><p>Ikuti urutan ini agar perakitan aman dan hasilnya benar. Centang langkah yang sudah kamu pahami.</p></div>
+        <div style=${{minWidth:180}}><div style=${{fontSize:13,marginBottom:4}} className="mono">${doneSteps} / ${totalSteps} langkah</div><div className="bar"><i style=${{width:(doneSteps/totalSteps*100)+'%'}}></i></div></div>
+      </div>
+      <div className="phases">${SOP.map(function(ph,pi){
+        var n=ph.steps.filter(function(_,i){return done[ph.id+'.'+i]}).length;
+        var all=n===ph.steps.length;var isOpen=!!exp[ph.id];
+        return html`<div key=${ph.id} className=${'phase'+(all?' done':'')}>
+          <button aria-expanded=${isOpen} onClick=${function(){setExp(function(e){var x=Object.assign({},e);x[ph.id]=!x[ph.id];return x})}}>
+            <span className="num">${all?html`<${Icon} n="check" s=${18}/>`:(pi+1)}</span>
+            <span style=${{flex:1,minWidth:0}}><h3>${ph.judul}</h3><span className="meta">${n} dari ${ph.steps.length} langkah</span></span>
+            <${Icon} n="chevron" s=${20} cls=${isOpen?'rotate-180':''}/>
+          </button>
+          ${isOpen?html`<div className="body">${ph.steps.map(function(s,i){
+            var k=ph.id+'.'+i;var on=!!done[k];
+            return html`<div key=${k} className=${'step'+(on?' on':'')}>
+              <input type="checkbox" id=${'sop-'+k} checked=${on} onChange=${function(){toggleStep(k)}}/>
+              <label htmlFor=${'sop-'+k}><b>${s[0]}</b><span>${s[1]}</span></label></div>`})}</div>`:null}
+        </div>`})}</div>
+    </div>`}
+    ${open?html`<${HWModal} h=${open} onClose=${function(){setOpen(null)}}/>`:null}
+  </div>`;
+}
+
+/* ---------- Papan simulasi (SVG) ---------- */
+var GEO={
+  bench:[130,40,420,360],socket:[205,90,130,130],m2:[198,254,160,32],pcie:[143,292,270,34],io:[88,44,44,136],
+  psuBay:[130,418,420,72],atx24:[514,268,36,104],eps:[192,38,76,32],fph:[396,360,128,38]
+};
+for(var gi=0;gi<4;gi++)GEO['dimm'+gi]=[404+25*gi,58,24,216];
+var TLIST=['bench','caseBay','socket','dimm0','dimm1','dimm2','dimm3','m2','pcie','io','psuBay','atx24','eps','fph'];
+
+function Board(p){
+  var S=p.S,run=p.running,glow=p.glow,armed=!!p.sel;
+  var inCase=S.mobo==='case',onBench=S.mobo==='bench';
+  function tgt(id,hidden){
+    var g=GEO[id];if(!g)return null;
+    return html`<g key=${id} className=${'tgt'+(armed?' armed':'')+(glow===id?' glow':'')+(hidden?' hidden':'')} role="button" tabIndex=${hidden?-1:0} aria-label=${SIM.TARGETS[id]}
+      onClick=${function(){p.onTarget(id)}} onKeyDown=${function(e){if(e.key==='Enter'||e.key===' '){e.preventDefault();p.onTarget(id)}}}>
+      <rect className="hit" x=${g[0]} y=${g[1]} width=${g[2]} height=${g[3]}/>
+      <rect className="ring" x=${g[0]} y=${g[1]} width=${g[2]} height=${g[3]}/>
+    </g>`;
+  }
+  var spin=run?'spin':'';
+  var ramX=function(i){return 406+25*i};
+  return html`<svg className="board" viewBox="0 0 760 520" role="group" aria-label="Meja kerja perakitan PC">
+    <defs>
+      <pattern id="dots" width="14" height="14" patternUnits="userSpaceOnUse"><circle cx="2" cy="2" r="1.1" fill="var(--case-line)" opacity=".35"/></pattern>
+      <linearGradient id="cpuG" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stopColor="#e8ecf2"/><stop offset="1" stopColor="#a9b3c2"/></linearGradient>
+    </defs>
+
+    <rect className="tgt-case" x="0" y="0" width="760" height="520" fill="transparent" onClick=${function(){p.onTarget('caseBay')}} style=${{cursor:'pointer'}}/>
+
+    <g className="deco">
+      <rect x="14" y="14" width="732" height="492" rx="18" fill="var(--case-fill)" stroke="var(--case-line)" strokeWidth="3" strokeDasharray=${inCase?'0':'10 8'} opacity=${inCase?1:.55}/>
+      <rect x="14" y="14" width="732" height="492" rx="18" fill="url(#dots)"/>
+      <text className="lbl out big" x="30" y="40">CASING</text>
+      <text className="lbl out" x="600" y="36">DEPAN</text>
+      <path d="M582 20V500" stroke="var(--case-line)" strokeWidth="2" strokeDasharray="4 6" opacity=".6"/>
+      <text className="lbl out" x="26" y="196" transform="rotate(0)">BELAKANG</text>
+      ${onBench?html`<g><rect x="112" y="26" width="458" height="392" rx="14" fill="var(--mat)" stroke="var(--case-line)" strokeWidth="1.5" opacity=".95"/>
+        <text className="lbl out" x="122" y="22">ALAS ANTI-STATIS</text></g>`:null}
+      ${S.mobo==='tray'?html`<g><rect x="130" y="40" width="420" height="360" rx="10" fill="none" stroke="var(--accent)" strokeWidth="2.5" strokeDasharray="8 6"/>
+        <text className="lbl big out" x="340" y="214" textAnchor="middle">MEJA KERJA</text>
+        <text className="lbl out" x="340" y="236" textAnchor="middle">Pilih Motherboard, lalu ketuk di sini</text></g>`:null}
+      <g>
+        <rect x="600" y="50" width="130" height="410" rx="12" fill="none" stroke="var(--case-line)" strokeWidth="2" opacity=".6"/>
+        <circle cx="665" cy="170" r="48" fill="none" stroke="var(--case-line)" strokeWidth="3"/>
+        <circle cx="665" cy="320" r="48" fill="none" stroke="var(--case-line)" strokeWidth="3"/>
+        <g className=${spin}><path d="M665 170m0-40a40 40 0 0 1 0 80M665 170m-40 0a40 40 0 0 1 80 0M665 320m0-40a40 40 0 0 1 0 80M665 320m-40 0a40 40 0 0 1 80 0" fill="none" stroke="var(--case-line)" strokeWidth="9" strokeLinecap="round" opacity=".5"/></g>
+        <circle cx="632" cy="74" r="6" className="led" fill=${run?'#22c55e':'var(--case-line)'}/>
+        <circle cx="698" cy="74" r="6" className="led" fill=${run?'#f59e0b':'var(--case-line)'}/>
+        <text className="lbl out" x="632" y="96" textAnchor="middle">PWR</text>
+        <text className="lbl out" x="698" y="96" textAnchor="middle">HDD</text>
+      </g>
+      <rect x="130" y="418" width="420" height="72" rx="8" fill="none" stroke="var(--case-line)" strokeWidth="2" strokeDasharray=${S.psu?'0':'7 6'}/>
+      ${S.psu?null:html`<text className="lbl out" x="340" y="459" textAnchor="middle">BAY PSU</text>`}
+      <rect x=${S.io?96:92} y="48" width=${S.io?34:40} height="128" rx="3" fill=${S.io?'var(--case-line)':'none'} stroke="var(--case-line)" strokeWidth="2" strokeDasharray=${S.io?'0':'5 4'}/>
+      ${S.io?html`<g fill="var(--case-fill)"><rect x="102" y="58" width="20" height="14" rx="2"/><rect x="102" y="80" width="20" height="14" rx="2"/><rect x="102" y="102" width="20" height="16" rx="2"/><rect x="102" y="126" width="20" height="14" rx="2"/><rect x="102" y="148" width="20" height="14" rx="2"/></g>`:html`<text className="lbl out" x="30" y="214" fontSize="11">I/O</text>`}
+    </g>
+
+    ${S.mobo!=='tray'?html`<g className="deco">
+      <rect x="130" y="40" width="420" height="360" rx="6" fill="var(--pcb)" stroke="var(--pcb-edge)" strokeWidth="3"/>
+      <g fill="none" stroke="var(--pcb-trace)" strokeWidth="2" opacity=".55" strokeLinecap="round">
+        <path d="M345 150H400M345 170H395V262M345 190H380V300M240 222V252M290 222V262M150 290H190V250"/>
+        <path d="M410 280V345M440 280V335H500M470 280V350"/>
+        <path d="M200 380H380M160 340V380"/>
+      </g>
+      <g fill="var(--slot)" stroke="var(--slot-line)" strokeWidth="1.5">
+        <rect x="132" y="52" width="26" height="14" rx="2"/><rect x="132" y="74" width="26" height="14" rx="2"/><rect x="132" y="96" width="26" height="18" rx="2"/><rect x="132" y="122" width="26" height="14" rx="2"/><rect x="132" y="144" width="26" height="14" rx="2"/>
+      </g>
+      <rect x="166" y="56" width="28" height="128" rx="4" fill="var(--slot-line)" opacity=".8"/>
+      <rect x="342" y="332" width="50" height="46" rx="4" fill="var(--slot-line)"/><text className="lbl" x="367" y="360" textAnchor="middle">PCH</text>
+      <rect x="143" y="340" width="100" height="12" rx="2" fill="var(--slot)" stroke="var(--slot-line)"/><rect x="143" y="366" width="64" height="12" rx="2" fill="var(--slot)" stroke="var(--slot-line)"/>
+      <text className="lbl" x="143" y="334">PCIe x1</text>
+
+      <rect x="210" y="95" width="120" height="120" rx="6" fill="var(--slot)" stroke="var(--slot-line)" strokeWidth="2"/>
+      <rect x="220" y="105" width="100" height="100" fill="none" stroke="var(--slot-line)" strokeDasharray="2 3"/>
+      <polygon points="210,95 228,95 210,113" fill="#d9a521"/>
+      <text className="lbl" x="270" y="232" textAnchor="middle">SOCKET CPU</text>
+
+      <rect x="198" y="40" width="72" height="26" rx="3" fill="var(--slot)" stroke="var(--slot-line)"/>
+      <g fill="var(--slot-line)">${[0,1,2,3].map(function(i){return html`<rect key=${'e'+i} x=${204+i*17} y="46" width="10" height="14"/>`})}</g>
+      <text className="lbl" x="276" y="58">CPU 8-PIN</text>
+
+      ${[0,1,2,3].map(function(i){return html`<g key=${'d'+i}>
+        <rect x=${ramX(i)} y="64" width="20" height="204" rx="3" fill="var(--slot)" stroke="var(--slot-line)" strokeWidth="1.5"/>
+        <rect x=${ramX(i)+8} y="64" width="4" height="60" fill="var(--slot-line)"/>
+        <text className="lbl" x=${ramX(i)+10} y="56" textAnchor="middle" fontSize="11">${['A1','A2','B1','B2'][i]}</text></g>`})}
+
+      <rect x="200" y="260" width="150" height="20" rx="3" fill="var(--slot)" stroke="var(--slot-line)" strokeWidth="1.5"/>
+      <text className="lbl" x="360" y="274">M.2</text>
+      <rect x="146" y="298" width="262" height="22" rx="3" fill="var(--slot)" stroke="var(--slot-line)" strokeWidth="1.5"/>
+      <text className="lbl" x="414" y="314">PCIe x16</text>
+
+      <rect x="518" y="272" width="28" height="96" rx="3" fill="var(--slot)" stroke="var(--slot-line)" strokeWidth="1.5"/>
+      <g fill="var(--slot-line)">${[0,1,2,3,4,5,6,7,8,9,10,11].map(function(i){return html`<g key=${'p'+i}><rect x="522" y=${276+i*7.6} width="8" height="5"/><rect x="534" y=${276+i*7.6} width="8" height="5"/></g>`})}</g>
+      <text className="lbl" x="512" y="396" textAnchor="end" fontSize="11">ATX 24-PIN</text>
+
+      <rect x="400" y="364" width="120" height="30" rx="3" fill="var(--slot)" stroke="var(--slot-line)" strokeWidth="1.5"/>
+      <g fill="var(--slot-line)">${[0,1,2,3,4].map(function(i){return html`<g key=${'f'+i}><rect x=${410+i*21} y="369" width="9" height="8"/><rect x=${410+i*21} y="381" width="9" height="8"/></g>`})}</g>
+      <text className="lbl" x="400" y="358">F_PANEL</text>
+
+      ${inCase?html`<g fill="#c9a24a" stroke="#7a5f1d">${[[142,52],[538,52],[142,388],[538,388],[142,222],[538,222]].map(function(c,i){return html`<circle key=${'s'+i} cx=${c[0]} cy=${c[1]} r="5"/>`})}</g>`:null}
+    </g>`:null}
+
+    ${S.psu?html`<g className="deco">
+      <rect x="130" y="418" width="420" height="72" rx="8" fill="var(--psu)" stroke="var(--case-line)" strokeWidth="2"/>
+      <circle cx="190" cy="454" r="26" fill="none" stroke="var(--slot-line)" strokeWidth="3"/>
+      <g className=${spin}><path d="M190 454m0-22a22 22 0 0 1 0 44M190 454m-22 0a22 22 0 0 1 44 0" fill="none" stroke="var(--slot-line)" strokeWidth="6" strokeLinecap="round"/></g>
+      <text className="lbl" x="250" y="450" fontSize="15" fontWeight="600">PSU 650W</text>
+      <text className="lbl" x="250" y="470">80+ Bronze</text>
+      <rect x="500" y="440" width="34" height="16" rx="3" fill=${run?'#22c55e':'var(--slot-line)'} className="led"/>
+    </g>`:null}
+
+    ${S.cpu?html`<g className="deco"><rect x="222" y="107" width="96" height="96" rx="5" fill="url(#cpuG)" stroke="#7f8a9a" strokeWidth="2"/>
+      <polygon points="222,107 242,107 222,127" fill="#d9a521"/>
+      <rect x="244" y="129" width="52" height="52" rx="3" fill="none" stroke="#7f8a9a" strokeWidth="1.5"/>
+      <text x="270" y="160" textAnchor="middle" fontSize="12" fontFamily="var(--f-mono)" fill="#4a5568">CPU</text></g>`:null}
+    ${S.paste&&!S.cooler?html`<g className="deco"><circle cx="270" cy="155" r="10" fill="#cfd6df" stroke="#8a95a5"/></g>`:null}
+    ${S.cooler?html`<g className="deco"><rect x="190" y="75" width="160" height="160" rx="12" fill="var(--cooler)" stroke="#6a7587" strokeWidth="3"/>
+      <circle cx="270" cy="155" r="62" fill="none" stroke="#5c6779" strokeWidth="3"/>
+      <g className=${spin}><g fill="#e8edf5" stroke="#5c6779" strokeWidth="1.5">${[0,72,144,216,288].map(function(a){return html`<path key=${'b'+a} transform=${'rotate('+a+' 270 155)'} d="M270 155C262 130 270 106 292 104C300 128 292 148 270 155Z"/>`})}</g><circle cx="270" cy="155" r="10" fill="#5c6779"/></g></g>`:null}
+
+    ${[0,1,2,3].map(function(i){return S.ram[i]?html`<g key=${'r'+i} className="deco"><rect x=${ramX(i)} y="64" width="20" height="204" rx="3" fill="var(--ram)" stroke="#173a9e" strokeWidth="1.5"/>
+      <rect x=${ramX(i)+4} y="80" width="12" height="26" rx="1" fill="#0f2a73"/><rect x=${ramX(i)+4} y="116" width="12" height="26" rx="1" fill="#0f2a73"/><rect x=${ramX(i)+4} y="152" width="12" height="26" rx="1" fill="#0f2a73"/><rect x=${ramX(i)+4} y="188" width="12" height="26" rx="1" fill="#0f2a73"/></g>`:null})}
+
+    ${S.ssd?html`<g className="deco"><rect x="204" y="257" width="144" height="26" rx="3" fill="var(--ssd)" stroke="#3aa6b5" strokeWidth="1.5"/>
+      <rect x="230" y="262" width="30" height="16" rx="2" fill="#39505a"/><rect x="268" y="262" width="22" height="16" rx="2" fill="#39505a"/><circle cx="340" cy="270" r="4" fill="#c9a24a"/><text className="lbl" x="296" y="274" fontSize="10">NVMe</text></g>`:null}
+
+    ${S.vga?html`<g className="deco"><rect x="140" y="270" width="270" height="62" rx="6" fill="var(--vga)" stroke="#5f6f8a" strokeWidth="2"/>
+      <circle cx="215" cy="301" r="22" fill="none" stroke="#5f6f8a" strokeWidth="2.5"/><circle cx="300" cy="301" r="22" fill="none" stroke="#5f6f8a" strokeWidth="2.5"/>
+      <g className=${spin}><path d="M215 301m0-17a17 17 0 0 1 0 34M215 301m-17 0a17 17 0 0 1 34 0" fill="none" stroke="#8da0be" strokeWidth="5" strokeLinecap="round"/></g>
+      <g className=${spin}><path d="M300 301m0-17a17 17 0 0 1 0 34M300 301m-17 0a17 17 0 0 1 34 0" fill="none" stroke="#8da0be" strokeWidth="5" strokeLinecap="round"/></g>
+      <rect x="340" y="282" width="62" height="12" rx="2" fill="#3a465c"/><text className="lbl" x="344" y="292" fontSize="10">GPU</text>
+      <rect x="128" y="266" width="12" height="70" rx="2" fill="#aab4c4"/></g>`:null}
+
+    ${S.c24?html`<path className="deco" d="M532 340V418" stroke="var(--cable24)" strokeWidth="14" strokeLinecap="round" fill="none"/>`:null}
+    ${S.c8?html`<path className="deco" d="M230 54V30H576V446H550" stroke="var(--cable8)" strokeWidth="9" strokeLinecap="round" strokeLinejoin="round" fill="none"/>`:null}
+    ${S.fp?html`<path className="deco" d="M458 390V406H612V96H640" stroke="var(--cablefp)" strokeWidth="5" strokeLinecap="round" strokeLinejoin="round" fill="none"/>`:null}
+
+    <g className="tgt" onClick=${p.onPower} role="button" tabIndex="0" aria-label="Tombol power casing" onKeyDown=${function(e){if(e.key==='Enter'||e.key===' '){e.preventDefault();p.onPower()}}}>
+      <circle cx="665" cy="58" r="22" fill=${run?'var(--ok)':'var(--surface)'} stroke=${run?'var(--ok)':'var(--case-line)'} strokeWidth="3"/>
+      <path d="M665 49v10M659 52a9 9 0 1 0 12 0" fill="none" stroke=${run?'var(--surface)':'var(--fg)'} strokeWidth="2.4" strokeLinecap="round"/>
+      <circle className="ring" cx="665" cy="58" r="26"/>
+    </g>
+
+    ${TLIST.map(function(id){
+      if(id==='bench')return tgt(id,S.mobo!=='tray');
+      if(id==='caseBay')return null;
+      if(id==='io')return tgt(id,false);
+      return tgt(id,S.mobo==='tray'&&id!=='psuBay'&&id!=='io');
+    })}
+  </svg>`;
+}
+
+/* ---------- Simulasi ---------- */
+function FrontPanelModal(p){
+  var S=p.S;
+  var _p=useState({}),placed=_p[0],setPlaced=_p[1];
+  var _c=useState(null),cab=_c[0],setCab=_c[1];
+  var _m=useState(null),msg=_m[0],setMsg=_m[1];
+  var _sh=useState(null),shake=_sh[0],setShake=_sh[1];
+  var cables=['PWR_SW','RESET_SW','HDD_LED','PWR_LED'];
+  function plug(sock){
+    if(placed[sock])return;
+    if(!cab){setMsg({kind:'info',title:'Pilih kabel dulu',msg:'Ketuk salah satu kabel di atas, lalu ketuk pin header yang sesuai.'});return}
+    if(cab===sock){
+      var np=Object.assign({},placed);np[sock]=cab;setPlaced(np);setCab(null);AU.good();
+      setMsg({kind:'ok',title:SIM.FP[cab].sock+' terpasang',msg:cab+' tersambung ke pin yang benar ('+SIM.FP[cab].fungsi+').'});
+      if(Object.keys(np).length===4)setTimeout(p.onDone,700);
+    }else{
+      AU.bad();setShake(sock);setTimeout(function(){setShake(null)},400);
+      p.onWrong();
+      setMsg({kind:'err',title:'Pin tidak cocok',msg:p.exam?'Kabel dipasang ke pin yang salah. Periksa kembali label silkscreen header. Skor berkurang 5.':'Kabel '+cab+' berfungsi sebagai '+SIM.FP[cab].fungsi+', sedangkan header yang kamu pilih berlabel "'+SIM.FP[sock].sock+'" untuk '+SIM.FP[sock].fungsi+'. Jika tertukar, tombol atau lampu casing bekerja salah atau tidak berfungsi.'});
+      setCab(null);
+    }
+  }
+  return html`<${Modal} label="Mini-simulasi Front Panel" onClose=${p.onClose}>
+    <div className="modal-h"><div><h2>Mini-simulasi Header Front Panel</h2><p style=${{color:'var(--muted)',fontSize:14}}>Cocokkan keempat kabel dengan pin header sesuai label silkscreen motherboard. Urutan header tiap papan bisa berbeda.</p></div>
+      <button className="btn sm" onClick=${p.onClose} aria-label="Tutup"><${Icon} n="x" s=${18}/></button></div>
+    <h3>Kabel dari casing</h3>
+    <div className="tgtbar" style=${{marginTop:0}}>${cables.map(function(c){
+      var used=!!Object.keys(placed).filter(function(k){return placed[k]===c}).length;
+      return html`<button key=${c} className=${'cab'+(used?' used':'')} aria-pressed=${cab===c} disabled=${used} onClick=${function(){AU.tap();setCab(c)}}><i style=${{background:SIM.FP[c].warna}}></i>${c}</button>`})}</div>
+    <h3>Header F_PANEL di motherboard</h3>
+    <div className="fpgrid">${S.fpOrder.map(function(sk){
+      var on=!!placed[sk];
+      return html`<button key=${sk} className=${'sock'+(on?' on':'')+(shake===sk?' shake':'')} onClick=${function(){plug(sk)}} aria-label=${'Pin '+SIM.FP[sk].sock}>
+        <span className="pins"><span className="pin"></span><span className="pin"></span></span>
+        <span className="sl">${SIM.FP[sk].sock}</span>
+        ${on?html`<span className="pill ok"><${Icon} n="check" s=${12}/> ${sk}</span>`:html`<span style=${{fontSize:11.5,color:'var(--muted)'}}>${p.practice?SIM.FP[sk].fungsi:'kosong'}</span>`}
+      </button>`})}</div>
+    ${msg?html`<div className=${'fb '+msg.kind} style=${{marginTop:14,marginBottom:0}} role="status"><${Icon} n=${msg.kind==='ok'?'check':(msg.kind==='err'?'warn':'info')} s=${20}/><div><b>${msg.title}</b>${msg.msg}</div></div>`:null}
+  <//>`;
+}
+
+function Stage3D(p){
+  var ref=useRef(null);
+  var _f=useState(false),failed=_f[0],setFailed=_f[1];
+  var _k=useState(false),k3open=_k[0],setK3open=_k[1];
+  useEffect(function(){
+    var api=null;
+    try{
+      if(!window.Scene3D||!window.Scene3D.supported())throw new Error('no3d');
+      api=window.Scene3D.create(ref.current,{
+        canTouch:function(i){return p.cbs.current.canTouch(i)},
+        onDragStart:function(i){return p.cbs.current.onDragStart(i)},
+        onDrop:function(i,s){p.cbs.current.onDrop(i,s)},
+        onPartTap:function(i){p.cbs.current.onPartTap(i)},
+        onSlotTap:function(s){p.cbs.current.onSlotTap(s)}
+      });
+      p.apiRef.current=api;
+    }catch(e){setFailed(true);p.apiRef.current=null;if(p.onFail)p.onFail()}
+    return function(){if(api){api.dispose()}p.apiRef.current=null};
+  },[]);
+  if(failed){
+    return html`<div><div className="fb warn"><${Icon} n="warn" s=${20}/><div><b>Tampilan 3D tidak tersedia</b>Browser atau perangkat ini belum mendukung WebGL, atau pustaka 3D belum termuat (perlu internet sekali). Simulasi memakai papan 2D sebagai gantinya.</div></div>
+      <div className="board-wrap"><${Board} S=${p.S} sel=${p.sel} glow=${p.glow} running=${p.running} onTarget=${p.onTarget} onPower=${p.onPower}/></div></div>`;
+  }
+  function go(f){var a=p.apiRef.current;if(a)f(a)}
+  var St=p.S||{};
+  var r1done=St.cpu&&St.paste&&St.cooler&&St.ssd&&St.io&&St.psu&&St.vga&&(St.ram||[]).filter(Boolean).length>=2;
+  var rackLabel=St.mobo==='tray'?'Komponen di meja':(r1done?'Rak 2: Kabel':'Rak 1: Komponen');
+  var k3n=p.S.k3?(['esd','mat','tool'].filter(function(k){return p.S.k3[k]}).length):0;
+  return html`<div>
+    <button className="btn fsbtn" onClick=${p.onFull}><${Icon} n="expand" s=${18}/> Layar Penuh (Fokus Praktik)</button>
+    <div className="view3dwrap">
+      <div className="view3d" ref=${ref}></div>
+      ${p.full?html`<div className="fsbar">
+        <button className="cbtn" aria-label="Keluar layar penuh" title="Keluar layar penuh" onClick=${p.onFull}><${Icon} n="shrink" s=${18}/></button>
+        <button className=${'cbtn'+(k3n<3?' warnb':'')} aria-label="Checklist K3LH" title="Checklist K3LH" aria-pressed=${k3open} onClick=${function(){setK3open(!k3open)}}><${Icon} n="shield" s=${18}/><span className="bdg">${k3n}/3</span></button>
+        <button className=${'cbtn pwr'+(p.ready&&!p.done?' rdy':'')} aria-label="Tekan tombol power PC" title="Tekan tombol power PC" disabled=${!!p.done} onClick=${p.onPower}><${Icon} n="power" s=${18}/></button>
+      </div>`:null}
+      ${p.full&&k3open?html`<div className="fsk3" role="group" aria-label="Checklist K3LH">
+        ${[['esd','Gelang ESD terpasang'],['mat','Alas kerja non-konduktif'],['tool','Obeng magnetik siap']].map(function(k){
+          return html`<button key=${k[0]} className="k3b" aria-pressed=${!!p.S.k3[k[0]]} onClick=${function(){p.onK3(k[0])}}><span className="bx">${p.S.k3[k[0]]?html`<${Icon} n="check" s=${13}/>`:null}</span>${k[1]}</button>`})}
+      </div>`:null}
+      ${p.full&&p.toast?html`<div className=${'fstoast '+p.toast.kind} role="status" aria-live="polite">${p.toast.title}</div>`:null}
+      <div className="camover">
+        <button className="cbtn" aria-label="Lihat Dalam Casing" title="Lihat Dalam Casing" onClick=${function(){go(function(a){a.focus('case')})}}><${Icon} n="case" s=${15}/><span className="lb"> Lihat Dalam Casing</span></button>
+        <button className="cbtn" aria-label="Fokus Motherboard" title="Fokus Motherboard" onClick=${function(){go(function(a){a.focus('board')})}}><${Icon} n="mobo" s=${15}/><span className="lb"> Fokus Motherboard</span></button>
+        <button className="cbtn" aria-label="Zoom In" onClick=${function(){go(function(a){a.zoom(.7)})}}><${Icon} n="plus" s=${15}/><span className="lb"> Zoom In (+)</span></button>
+        <button className="cbtn" aria-label="Zoom Out" onClick=${function(){go(function(a){a.zoom(1.4)})}}><${Icon} n="minus" s=${15}/><span className="lb"> Zoom Out (-)</span></button>
+        <button className="cbtn" aria-label="Reset Kamera" title="Reset Kamera" onClick=${function(){go(function(a){a.focus('work')})}}><${Icon} n="reset" s=${15}/><span className="lb"> Reset Kamera</span></button>
+        ${p.practice?html`<button className="cbtn pri" aria-label="Fokus Slot Aktif" title="Fokus Slot Aktif" onClick=${function(){go(function(a){a.focusItem(p.activeItem||'mobo')})}}><${Icon} n="target" s=${15}/><span className="lb"> Fokus Slot Aktif</span></button>`:null}
+      </div>
+    </div>
+    <div className="camrow" style=${{marginTop:8,marginBottom:0}}><span>Pindah cepat:</span>
+      ${[['bench','Meja kerja'],['all','Seluruh PC']].map(function(c){return html`<button key=${c[0]} className="tg" onClick=${function(){go(function(a){a.focus(c[0])})}}>${c[1]}</button>`})}
+      <span className=${'pill'+(St.mobo==='tray'?'':' acc')}>${rackLabel}</span>
+      ${p.practice?html`<span className="pill acc" style=${{marginLeft:'auto'}}>Auto-Focus aktif</span>`:html`<span className="pill" style=${{marginLeft:'auto'}}>Auto-Focus mati (Mode Ujian)</span>`}
+    </div>
+    <p className="tip3d"><${Icon} n="info" s=${16}/><span>Sebelum motherboard diletakkan di alas anti-statis, semua komponen berjajar di meja. Setelah itu rak samping aktif otomatis: Rak 1 berisi komponen, dan Rak 2 berisi kabel setelah semua komponen terpasang. Ketuk komponen, lalu ketuk slotnya di PC, atau seret komponen langsung ke slotnya. Gerakan lebih dari 8 piksel dianggap memutar atau menggeser kamera, bukan memasang. Satu jari memutar kamera, dua jari menggeser kamera ke atas, bawah, kiri, dan kanan, dan cubit dua jari untuk zoom. Di PC: seret untuk memutar, klik kanan atau tombol panah keyboard untuk menggeser, scroll untuk zoom.</span></p>
+  </div>`;
+}
+
+function Sim(p){
+  var _m=useState('latihan'),mode=_m[0],setMode=_m[1];
+  var _s=useState(SIM.newState),S=_s[0],setS=_s[1];
+  var _sel=useState(null),sel=_sel[0],setSel=_sel[1];
+  var _fb=useState({kind:'info',title:'Selamat datang di simulasi',msg:'Mulai dengan checklist K3LH, lalu seret komponen 3D ke slot tujuannya (atau ketuk komponen, lalu ketuk slot).'}),fb=_fb[0],setFb=_fb[1];
+  var _er=useState(0),errors=_er[0],setErrors=_er[1];
+  var _pn=useState(0),pen=_pn[0],setPen=_pn[1];
+  var _t0=useState(null),t0=_t0[0],setT0=_t0[1];
+  var _now=useState(Date.now()),now=_now[0],setNow=_now[1];
+  var _dn=useState(null),done=_dn[0],setDone=_dn[1];
+  var _fp=useState(false),fpOpen=_fp[0],setFpOpen=_fp[1];
+  var _snd=useState(true),snd=_snd[0],setSnd=_snd[1];
+  var _cf=useState(false),confirmClr=_cf[0],setConfirmClr=_cf[1];
+  var _lg=useState([]),log=_lg[0],setLog=_lg[1];
+  var _or=useState(SIM.ORDER),order=_or[0],setOrder=_or[1];
+  var _dt=useState(null),detail=_dt[0],setDetail=_dt[1];
+  var practice=mode==='latihan';
+  var exam=!practice;
+  function shuf(a){a=a.slice();for(var i=a.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1));var t=a[i];a[i]=a[j];a[j]=t}return a}
+  var apiRef=useRef(null),cbs=useRef({});
+  var _nc=useState(0),nonce=_nc[0],setNonce=_nc[1];
+  var _fl=useState(false),flat=_fl[0],setFlat=_fl[1];
+  var sceneKey=[S.mobo,S.cpu,S.paste,S.cooler,S.ram.join(''),S.ssd,S.io,S.psu,S.vga,S.c24,S.c8,S.fp].join('|');
+  function A(){return flat?null:apiRef.current}
+
+  useEffect(function(){
+    if(!t0||done)return;
+    var id=setInterval(function(){setNow(Date.now())},500);
+    return function(){clearInterval(id)};
+  },[t0,done]);
+  useEffect(function(){AU.on=snd},[snd]);
+  useEffect(function(){var a=A();if(a)a.sync(S)},[sceneKey,nonce,flat]);
+  useEffect(function(){var a=A();if(a)a.setSelected(sel)},[sel,nonce]);
+  useEffect(function(){var a=A();if(a)a.setOrder(order.map(function(i){return i}))},[order,nonce,flat]);
+  var hintSlot=null;
+
+  var elapsed=done?done.waktu:(t0?Math.floor((now-t0)/1000):0);
+  var score=Math.max(0,100-pen);
+  var k3done=SIM.k3ok(S);
+  var k3count=(S.k3.esd?1:0)+(S.k3.mat?1:0)+(S.k3.tool?1:0);
+  var next=SIM.nextStep(S);
+  var ready=SIM.isComplete(S);
+  var _fu=useState(false),full=_fu[0],setFull=_fu[1];
+  var _ts=useState(null),toast=_ts[0],setToast=_ts[1];
+  function toggleFull(){
+    var v=!full;setFull(v);
+    try{
+      if(v){var el=document.documentElement;if(el.requestFullscreen&&!document.fullscreenElement){var pr=el.requestFullscreen();if(pr&&pr.catch)pr.catch(function(){})}}
+      else if(document.fullscreenElement&&document.exitFullscreen){var p2=document.exitFullscreen();if(p2&&p2.catch)p2.catch(function(){})}
+    }catch(e){}
+  }
+  useEffect(function(){
+    if(!full)return;
+    var ov=document.body.style.overflow;document.body.style.overflow='hidden';
+    function key(e){if(e.key==='Escape')setFull(false)}
+    function fsc(){if(!document.fullscreenElement)setFull(false)}
+    window.addEventListener('keydown',key);document.addEventListener('fullscreenchange',fsc);
+    return function(){document.body.style.overflow=ov;window.removeEventListener('keydown',key);document.removeEventListener('fullscreenchange',fsc)};
+  },[full]);
+  useEffect(function(){if(full){var a=apiRef.current;if(a&&a.resize)a.resize()}},[full]);
+  useEffect(function(){
+    if(!full){setToast(null);return}
+    setToast({kind:fb.kind,title:(fb.kind==='err'?'Peringatan: ':'')+fb.title});
+    var t=setTimeout(function(){setToast(null)},2600);
+    return function(){clearTimeout(t)};
+  },[fb,full]);
+  var running=!!done;
+
+  function start(){if(!t0)setT0(Date.now())}
+  function penalize(n,judul,rincian){
+    setErrors(function(e){return e+1});setPen(function(x){return x+n});
+    if(judul){var tt=t0?Math.floor((Date.now()-t0)/1000):0;setLog(function(l){return l.concat([{t:tt,judul:judul,rincian:rincian||'',poin:n}])})}
+  }
+  function okFb(r){return exam?{kind:'ok',title:r.title,msg:'Komponen terpasang.'}:{kind:'ok',title:r.title,msg:r.msg}}
+  var GENERIC={kind:'err',title:'Pelanggaran teknis dicatat',msg:'Pemasangan tidak sesuai prosedur atau slot yang dipilih salah. Skor berkurang 5. Periksa kembali urutan dan lokasi slot.'};
+  function reset(m){
+    setS(SIM.newState());setSel(null);setErrors(0);setPen(0);setT0(null);setDone(null);setFpOpen(false);
+    setNonce(function(n){return n+1});setLog([]);setOrder(m==='ujian'?shuf(SIM.ORDER):SIM.ORDER);
+    setFb({kind:'info',title:m==='ujian'?'Mode Ujian dimulai':'Perakitan direset',msg:m==='ujian'?'Tanpa petunjuk. Rakit PC dari awal secara mandiri sesuai SOP. Setiap pelanggaran dicatat dan mengurangi skor.':'Mulai lagi dari checklist K3LH.'});
+  }
+  function changeMode(m){setMode(m);reset(m)}
+  function toggleK3(k){
+    if(done)return;start();AU.tap();
+    setS(function(s){var k3=Object.assign({},s.k3);k3[k]=!k3[k];return Object.assign({},s,{k3:k3})});
+  }
+  function pick(id){
+    if(done||(A()&&A().isBusy()))return;start();
+    if(!k3done){
+      var k3m='Sebelum menyentuh komponen, lengkapi checklist K3LH: gelang ESD, alas non-konduktif, dan obeng magnetik. Muatan listrik statis dari tubuh bisa merusak chip tanpa terlihat. Skor berkurang 3.';
+      penalize(3,'K3LH belum lengkap',k3m);AU.bad();
+      setFb({kind:'err',title:'K3LH belum lengkap',msg:k3m});
+      return;
+    }
+    if(SIM.itemDone(S,id)&&id!=='mobo')return;
+    if(id==='mobo'&&S.mobo==='case')return;
+    AU.tap();
+    if(sel===id){setSel(null);return}
+    setSel(id);
+    setFb({kind:'info',title:SIM.ITEMS[id].nama+' dipilih',msg:practice?'Sekarang ketuk slot tujuannya. Slot yang benar sedang menyala.':'Temukan sendiri slot yang tepat di motherboard atau casing.'});
+  }
+  function onTarget(tid,fromDrag){
+    if(done||(A()&&A().isBusy()))return;
+    var api=A();
+    if(!sel){
+      setFb({kind:'warn',title:'Pilih komponen dulu',msg:'Ketuk atau seret salah satu komponen, lalu pasang di slot tujuan.'});return;
+    }
+    start();
+    var r=SIM.attempt(S,sel,tid);
+    if(!r.ok){
+      penalize(5,r.title,r.msg);AU.bad();setFb(exam?GENERIC:{kind:'err',title:r.title,msg:r.msg});
+      if(api){if(fromDrag)api.cancelDrag();else api.reject(sel)}
+      return;
+    }
+    if(r.openFP){if(api&&fromDrag)api.cancelDrag();setFpOpen(true);return}
+    if(api){
+      var item=sel;
+      setFb({kind:'info',title:'Memasang '+SIM.ITEMS[item].nama+'...',msg:'Perhatikan animasi pemasangannya.'});
+      AU.tap();
+      api.install(item,tid,r.S,function(){AU.good();setS(r.S);setSel(null);setFb(okFb(r))});
+      return;
+    }
+    AU.good();setS(r.S);setSel(null);setFb(okFb(r));
+  }
+  function fpDone(){
+    var api=A();
+    var ns=Object.assign({},S,{fp:true});
+    var msg={kind:'ok',title:'Front Panel terpasang',msg:'Keempat kabel tersambung ke pin yang benar. Tombol power casing kini terhubung ke motherboard.'};
+    setFpOpen(false);
+    if(api){api.install('fp','fph',ns,function(){AU.good();setS(ns);setSel(null);setFb(msg)});return}
+    setS(ns);setSel(null);setFb(msg);
+  }
+  cbs.current={
+    canTouch:function(i){return k3done&&!done},
+    onDragStart:function(i){
+      if(done)return false;start();
+      if(!k3done){pick(i);return false}
+      if(sel!==i){AU.tap();setSel(i);setFb({kind:'info',title:SIM.ITEMS[i].nama+' dipilih',msg:'Lepaskan komponen tepat di atas slot tujuannya.'})}
+      return true;
+    },
+    onDrop:function(i,slot){
+      var api=A();
+      if(!slot){if(api)api.cancelDrag();setFb({kind:'warn',title:'Belum di slot',msg:'Komponen dilepas di luar slot. Seret lagi dan lepaskan tepat di slot tujuan (garis biru muncul saat slot terdeteksi).'});return}
+      onTarget(slot,true);
+    },
+    onPartTap:function(i){pick(i)},
+    onSlotTap:function(sid){onTarget(sid,false)}
+  };
+  function pressPower(){
+    if(done)return;
+    start();
+    var r=SIM.power(S);
+    if(!r.ok){penalize(5,'Gagal menyala: '+r.title,r.msg);AU.bad();setFb(exam?{kind:'err',title:'Komputer tidak menyala',msg:'Pelanggaran dicatat. Ada komponen atau kabel yang belum terpasang dengan benar. Skor berkurang 5.'}:{kind:'err',title:'Gagal menyala: '+r.title,msg:r.msg});return}
+    var wk=Math.floor((Date.now()-(t0||Date.now()))/1000);
+    var skor=Math.max(0,100-pen);
+    var lulus=skor>=75;
+    var rec={id:Date.now(),nama:p.profile.nama||'Tanpa nama',kelas:p.profile.kelas||'-',mode:mode,skor:skor,waktu:wk,kesalahan:errors,lulus:lulus,tgl:new Date().toISOString(),dual:r.dual,log:log};
+    p.setHistory(function(h){return [rec].concat(h).slice(0,50)});
+    setDone({id:rec.id,skor:skor,waktu:wk,lulus:lulus,dual:r.dual,log:log,exam:exam});
+    AU.post();AU.win();
+    if(A()){A().focus('case');A().setPower(true,[{t:'TJKT-BIOS v1.0',c:'#ffffff'},{t:'CPU ........ terdeteksi'},{t:'Memori .... '+(SIM.ramCount(S)*8)+' GB '+(r.dual?'(Dual Channel)':'(Single)')},{t:'NVMe SSD .. terdeteksi'},{t:'GPU ........ PCIe x16 aktif'},{t:'Suhu CPU ... 38 C'},{t:'POST: BERHASIL',c:'#ffffff'},{t:'Tekan DEL untuk masuk BIOS',c:'#6c8f7c'}])}
+    setFb({kind:'ok',title:'POST berhasil',msg:exam?'Komputer menyala dan lolos Power-On Self-Test. Rapor evaluasi tampil di panel kanan.':'Komputer menyala dan lolos Power-On Self-Test. Lihat hasil praktikmu di panel kanan.'});
+  }
+  function setProf(k,v){
+    var np=Object.assign({},p.profile);np[k]=v;p.setProfile(np);
+    if(done)p.setHistory(function(h){return h.map(function(r){return r.id===done.id?Object.assign({},r,{nama:np.nama||'Tanpa nama',kelas:np.kelas||'-'}):r})});
+  }
+
+  var glow=(practice&&sel)?SIM.goodTarget(S,sel):null;
+  useEffect(function(){var a=A();if(a){a.setHint(glow);a.setPractice(practice)}},[glow,practice,sel]);
+  useEffect(function(){var a=A();if(a)a.setTheme(!!p.dark)},[p.dark,flat,nonce]);
+  useEffect(function(){
+    var a=A();if(!a||!practice||done)return;
+    var it=sel||(k3done?next.item:null);
+    if(it)a.focusItem(it);
+  },[sel,sceneKey,practice,k3done,nonce]);
+  useEffect(function(){var a=A();if(a)a.focus(practice?'work':'case',true)},[nonce]);
+  function stepsList(){return [
+    ['Lengkapi checklist K3LH',SIM.k3ok(S)],['Letakkan motherboard di meja kerja',S.mobo!=='tray'],['Pasang CPU',S.cpu],['Oleskan thermal paste',S.paste],['Pasang CPU cooler',S.cooler],
+    ['Pasang RAM (Dual Channel)',SIM.ramCount(S)>=1],['Pasang SSD NVMe M.2',S.ssd],['Pasang I/O Shield',S.io],['Pasang motherboard ke casing',S.mobo==='case'],
+    ['Pasang PSU',S.psu],['Pasang VGA Card',S.vga],['Sambung kabel 24-pin ATX',S.c24],['Sambung kabel CPU 8-pin',S.c8],['Sambung kabel Front Panel',S.fp],['Tekan tombol power (POST)',!!done]]}
+  var allTargets=['bench','caseBay','socket','dimm0','dimm1','dimm2','dimm3','m2','pcie','io','psuBay','atx24','eps','fph'];
+
+  return html`<div>
+    <div className="simbar">
+      <div className="seg" role="group" aria-label="Mode simulasi">
+        <button aria-pressed=${practice} onClick=${function(){changeMode('latihan')}}><${Icon} n="bulb" s=${17}/> Mode Latihan</button>
+        <button aria-pressed=${!practice} onClick=${function(){changeMode('ujian')}}><${Icon} n="shield" s=${17}/> Mode Ujian</button>
+      </div>
+      <div className="stats">
+        <div className="stat"><small>Waktu</small><b>${fmtTime(elapsed)}</b></div>
+        <div className="stat"><small>Skor akurasi</small><b>${score}</b></div>
+        <div className="stat"><small>Kesalahan</small><b>${errors}</b></div>
+        <div className="stat"><small>K3LH</small><b style=${{color:k3done?'var(--ok)':'var(--warn)',fontSize:14}}>${k3done?'Aman':k3count+'/3'}</b></div>
+      </div>
+      <div style=${{display:'flex',gap:8}}>
+        <button className="btn sm" onClick=${function(){setSnd(function(v){return !v})}} aria-label=${snd?'Matikan suara':'Nyalakan suara'}><${Icon} n=${snd?'sound':'mute'} s=${17}/></button>
+        <button className="btn sm" onClick=${function(){reset(mode)}}><${Icon} n="reset" s=${16}/> Reset Perakitan</button>
+      </div>
+    </div>
+
+    <div className="simgrid">
+      <div className="panel tray">
+        <h3>Panel Komponen</h3>
+        <div className="k3list">
+          ${[['esd','Gelang ESD terpasang'],['mat','Alas kerja non-konduktif'],['tool','Obeng magnetik siap']].map(function(k){
+            return html`<button key=${k[0]} className="k3b" aria-pressed=${S.k3[k[0]]} onClick=${function(){toggleK3(k[0])}}><span className="bx">${S.k3[k[0]]?html`<${Icon} n="check" s=${13}/>`:null}</span>${k[1]}</button>`})}
+        </div>
+        <div className="chips">${order.map(function(id,oi){
+          var it=SIM.ITEMS[id];
+          var used=SIM.itemDone(S,id);
+          var sub=it.sub;
+          if(practice){
+            if(id==='mobo')sub=S.mobo==='tray'?'Letakkan di meja':(S.mobo==='bench'?'Pindahkan ke casing':'Terpasang');
+            if(id==='ram')sub=SIM.ramCount(S)+' terpasang (maks. 2)';
+          }
+          return html`<button key=${id} className=${'chip'+(used?' used':'')+((practice&&k3done&&next.item===id&&!done)?' next':'')} aria-pressed=${sel===id} onClick=${function(){pick(id)}}>
+            <span className="ico"><${Icon} n=${used?'check':it.ikon} s=${17}/></span><span style=${{minWidth:0}}>${practice?(oi+1)+'. ':''}${it.nama}<small>${sub}</small></span></button>`})}</div>
+      </div>
+
+      <div className=${'panel stage'+(full?' fs':'')}>
+        <div className=${'fb '+fb.kind} role="status" aria-live="polite">
+          <${Icon} n=${fb.kind==='ok'?'check':(fb.kind==='err'?'warn':(fb.kind==='warn'?'warn':'info'))} s=${22}/>
+          <div><b>${fb.kind==='err'?'Peringatan Edukatif':fb.title}</b>${fb.kind==='err'?html`<span><strong>${fb.title}.</strong> </span>`:null}${fb.msg}</div>
+        </div>
+        <${Stage3D} full=${full} onFull=${toggleFull} onK3=${toggleK3} ready=${ready} done=${done} toast=${toast} S=${S} sel=${sel} glow=${glow} running=${running} onTarget=${onTarget} onPower=${pressPower} cbs=${cbs} apiRef=${apiRef} practice=${practice} activeItem=${sel||next.item} onFail=${function(){setFlat(true)}}/>
+        ${sel&&!done&&practice?html`<div className="tgtbar"><span>Terpilih: <b>${SIM.ITEMS[sel].nama}</b>. Ketuk slot di gambar atau pilih di sini:</span>
+          ${allTargets.filter(function(t){return !(t==='bench'&&S.mobo!=='tray')}).map(function(t){return html`<button key=${t} className="tg" onClick=${function(){onTarget(t,false)}}>${SIM.TARGETS[t]}</button>`})}</div>`:null}
+        <div className="powerrow">
+          <button className=${'btn powerbtn'+(ready&&!done?' ready':'')} onClick=${pressPower} disabled=${!!done}><${Icon} n="power" s=${20}/> Tekan Tombol Power PC</button>
+          <span style=${{fontSize:13,color:'var(--muted)'}}>${done?'PC sudah menyala. Tekan Reset Perakitan untuk mengulang.':(ready?'Semua komponen wajib terpasang. Siap uji nyala.':'Tombol aktif penuh setelah semua komponen wajib terpasang.')}</span>
+        </div>
+      </div>
+
+      <div className="side">
+        ${practice&&!done?html`<div className="next-box"><b><${Icon} n="bulb" s=${17}/> Langkah berikutnya</b>${next.text}</div>`:null}
+        ${practice?html`<div className="panel" style=${{padding:10}}><h3>Panduan Langkah</h3>
+          <ol className="stepl">${stepsList().map(function(st,i,arr){
+            var cur=!st[1]&&arr.findIndex(function(x){return !x[1]})===i;
+            return html`<li key=${i} className=${(st[1]?'d ':'')+(cur?'c':'')}><span className="sn">${st[1]?html`<${Icon} n="check" s=${12}/>`:(i+1)}</span>${st[0]}</li>`})}</ol></div>`:null}
+        ${exam&&!done?html`<div className="next-box"><b><${Icon} n="shield" s=${17}/> Mode Ujian Mandiri</b>Tidak ada petunjuk, urutan, maupun slot yang menyala. Setiap pelanggaran teknis dicatat dan mengurangi skor 5 poin (K3LH 3 poin). Kompeten jika skor minimal 75. Rapor muncul setelah tombol power ditekan dengan rakitan yang benar.</div>`:null}
+        <div className="monitor"><div className="screen" aria-label="Layar monitor simulasi">
+          ${!done?html`<div><span className="dim">NO SIGNAL</span><br/><span className="dim">Rakit PC lalu tekan tombol power.</span></div>`:html`<div>
+            <div className="row okl">TJKT-BIOS v1.0</div>
+            <div className="row" style=${{animationDelay:'.15s'}}>CPU ........ terdeteksi</div>
+            <div className="row" style=${{animationDelay:'.3s'}}>Memori .... ${SIM.ramCount(S)*8} GB ${done.dual?'(Dual Channel)':'(Single Channel)'}</div>
+            <div className="row" style=${{animationDelay:'.45s'}}>NVMe SSD .. terdeteksi</div>
+            <div className="row" style=${{animationDelay:'.6s'}}>GPU ........ PCIe x16 aktif</div>
+            <div className="row" style=${{animationDelay:'.75s'}}>Suhu CPU ... 38 C</div>
+            <div className="row okl" style=${{animationDelay:'.95s',marginTop:6}}>POST: BERHASIL</div>
+            <div className="row dim" style=${{animationDelay:'1.1s'}}>Tekan DEL untuk masuk BIOS</div></div>`}
+        </div></div>
+        ${done?html`<div className=${'result'+(done.lulus?'':' fail')}>
+          <h3>${done.exam?'Rapor Evaluasi Ujian Mandiri':'Kartu Hasil Praktik'}</h3>
+          <div style=${{display:'flex',gap:14,alignItems:'center',flexWrap:'wrap'}}><div className="score">${done.skor}<span style=${{fontSize:16,fontWeight:500}}> / 100</span></div>
+            <span className=${'pill '+(done.lulus?'ok':'bad')}>${done.exam?(done.lulus?'KOMPETEN':'BELUM KOMPETEN'):(done.lulus?'LULUS (KKM 75)':'BELUM LULUS')}</span></div>
+          <div className="kv"><div>Waktu<b>${fmtTime(done.waktu)}</b></div><div>Kesalahan<b>${done.log.length}</b></div><div>Mode<b style=${{fontSize:13}}>${done.exam?'Ujian':'Latihan'}</b></div><div>RAM<b style=${{fontSize:13}}>${done.dual?'Dual Channel':'Single'}</b></div></div>
+          <label className="fld" htmlFor="in-nama">Nama siswa<input id="in-nama" type="text" value=${p.profile.nama||''} placeholder="Tulis nama lengkap" onChange=${function(e){setProf('nama',e.target.value)}}/></label>
+          <label className="fld" htmlFor="in-kelas">Kelas<input id="in-kelas" type="text" value=${p.profile.kelas||''} placeholder="Contoh: X TJKT 1" onChange=${function(e){setProf('kelas',e.target.value)}}/></label>
+          <h3 style=${{fontSize:14,marginTop:14,marginBottom:0}}>Rincian Kesalahan Teknis (${done.log.length})</h3>
+          ${done.log.length?html`<ul className="errl">${done.log.map(function(l,i){return html`<li key=${i}><b>${fmtTime(l.t)} | ${l.judul} (-${l.poin})</b><small>${l.rincian}</small></li>`})}</ul>`:html`<p style=${{fontSize:13,marginTop:6}}>Tidak ada pelanggaran teknis tercatat.</p>`}
+          <p style=${{fontSize:12.5,color:'var(--muted)',marginTop:8}}>Hasil dan rincian kesalahan sudah tersimpan otomatis di riwayat perangkat ini.</p>
+        </div>`:null}
+      </div>
+    </div>
+
+    <div style=${{marginTop:22}}>
+      <div className="sec-h"><div><h2 style=${{fontSize:20}}>Riwayat Praktik</h2><p>Disimpan di perangkat ini dan tetap ada walau aplikasi ditutup atau offline.</p></div>
+        ${p.history.length?(confirmClr?html`<div style=${{display:'flex',gap:8,alignItems:'center'}}><span style=${{fontSize:13}}>Hapus semua riwayat?</span><button className="btn sm" onClick=${function(){p.setHistory([]);setConfirmClr(false)}}>Ya, hapus</button><button className="btn sm" onClick=${function(){setConfirmClr(false)}}>Batal</button></div>`:html`<button className="btn sm" onClick=${function(){setConfirmClr(true)}}><${Icon} n="trash" s=${15}/> Hapus riwayat</button>`):null}
+      </div>
+      ${p.history.length?html`<div className="tbl"><table><thead><tr><th>Tanggal</th><th>Nama</th><th>Kelas</th><th>Mode</th><th>Skor</th><th>Waktu</th><th>Salah</th><th>Status</th><th>Rincian</th></tr></thead>
+        <tbody>${p.history.slice(0,10).map(function(r){return html`<tr key=${r.id}><td>${fmtDate(r.tgl)}</td><td>${r.nama}</td><td>${r.kelas}</td><td>${r.mode==='ujian'?'Ujian':'Latihan'}</td><td><b>${r.skor}</b></td><td>${fmtTime(r.waktu)}</td><td>${r.kesalahan}</td><td><span className=${'pill '+(r.lulus?'ok':'bad')}>${r.mode==='ujian'?(r.lulus?'Kompeten':'Belum kompeten'):(r.lulus?'Lulus':'Belum lulus')}</span></td><td><button className="btn sm" onClick=${function(){setDetail(r)}}>Lihat</button></td></tr>`})}</tbody></table></div>`
+        :html`<div className="tbl"><div className="empty">Belum ada riwayat. Selesaikan satu perakitan sampai POST berhasil untuk menyimpan hasil pertamamu.</div></div>`}
+    </div>
+    ${detail?html`<${Modal} label="Rincian kesalahan" onClose=${function(){setDetail(null)}}>
+      <div className="modal-h"><div><h2>Rincian ${detail.mode==='ujian'?'Ujian':'Latihan'}</h2><p style=${{color:'var(--muted)',fontSize:14}}>${detail.nama} | ${detail.kelas} | Skor ${detail.skor} | ${fmtTime(detail.waktu)}</p></div>
+        <button className="btn sm" onClick=${function(){setDetail(null)}} aria-label="Tutup"><${Icon} n="x" s=${18}/></button></div>
+      ${(detail.log&&detail.log.length)?html`<ul className="errl">${detail.log.map(function(l,i){return html`<li key=${i}><b>${fmtTime(l.t)} | ${l.judul} (-${l.poin})</b><small>${l.rincian}</small></li>`})}</ul>`:html`<p>Tidak ada pelanggaran teknis tercatat pada sesi ini.</p>`}
+    <//>`:null}
+    ${fpOpen?html`<${FrontPanelModal} S=${S} practice=${practice} onClose=${function(){setFpOpen(false)}} onDone=${fpDone} onWrong=${function(){penalize(5,'Pin Front Panel tertukar','Kabel Front Panel disambungkan ke pin header yang salah.')}} exam=${exam}/>`:null}
+  </div>`;
+}
+
+/* ---------- Panduan install ---------- */
+function InstallModal(p){
+  return html`<${Modal} label="Panduan instal aplikasi" onClose=${p.onClose}>
+    <div className="modal-h"><div><h2>Instal Aplikasi (Mode Offline)</h2><p style=${{color:'var(--muted)',fontSize:14}}>Pasang PerakitPC TJKT seperti aplikasi biasa. Setelah dimuat sekali dengan internet, aplikasi bisa dibuka tanpa internet.</p></div>
+      <button className="btn sm" onClick=${p.onClose} aria-label="Tutup"><${Icon} n="x" s=${18}/></button></div>
+    <div className="guide">
+      <h4>PC atau laptop (Chrome / Edge)</h4>
+      <ol><li>Klik ikon instal di ujung kanan kolom alamat, atau menu titik tiga lalu <b>Instal PerakitPC TJKT</b> (Chrome) / <b>Aplikasi, Instal situs ini sebagai aplikasi</b> (Edge).</li><li>Aplikasi terbuka di jendela sendiri dan muncul di menu Start atau Desktop.</li></ol>
+      <h4>Android (Chrome)</h4>
+      <ol><li>Ketuk menu titik tiga di kanan atas.</li><li>Pilih <b>Instal aplikasi</b> atau <b>Tambahkan ke layar utama</b> (Add to Home screen).</li><li>Ketuk <b>Instal</b>.</li></ol>
+      <h4>iPhone / iPad (Safari)</h4>
+      <ol><li>Ketuk tombol <b>Bagikan</b> (kotak dengan panah ke atas).</li><li>Pilih <b>Tambah ke Layar Utama</b> (Add to Home Screen), lalu <b>Tambah</b>.</li></ol>
+      <h4>Tanpa internet sama sekali</h4>
+      <ol><li>Buka aplikasi sekali saat online agar berkas pendukung (React, Tailwind, font) tersimpan.</li><li>Atau simpan berkas <b>perakitpc-tjkt.html</b> dari gurumu, lalu buka lewat browser. Penggunaan sepenuhnya offline paling stabil jika berkas diletakkan di server sekolah (HTTPS) bersama <b>sw.js</b>.</li></ol>
+      <div className="fb info" style=${{marginTop:14,marginBottom:0}}><${Icon} n="info" s=${20}/><div><b>Status saat ini</b>Koneksi: ${navigator.onLine?'online':'offline'}. Cache offline (service worker): ${PWA.sw}. Progres belajar dan riwayat tersimpan otomatis di perangkat ini.</div></div>
+    </div>
+  <//>`;
+}
+
+/* ---------- App ---------- */
+function App(){
+  var _t=useState(function(){return LS.get('tjkt_pc_tab','materi')}),tab=_t[0],setTab=_t[1];
+  var _pg=useState(function(){return LS.get('tjkt_pc_progress',{dibaca:[],sop:{}})}),prog=_pg[0],setProg=_pg[1];
+  var _h=useState(function(){return LS.get('tjkt_pc_riwayat',[])}),history=_h[0],setHistory=_h[1];
+  var _pf=useState(function(){return LS.get('tjkt_pc_siswa',{nama:'',kelas:''})}),profile=_pf[0],setProfile=_pf[1];
+  var _in=useState(false),instOpen=_in[0],setInstOpen=_in[1];
+  var _tick=useState(0),tick=_tick[1];
+  var _th=useState(function(){return LS.get('tjkt_pc_tema','')}),theme=_th[0],setTheme=_th[1];
+
+  useEffect(function(){LS.set('tjkt_pc_tab',tab)},[tab]);
+  useEffect(function(){LS.set('tjkt_pc_progress',prog)},[prog]);
+  useEffect(function(){LS.set('tjkt_pc_riwayat',history)},[history]);
+  useEffect(function(){LS.set('tjkt_pc_siswa',profile)},[profile]);
+  useEffect(function(){
+    var r=document.documentElement;if(theme)r.setAttribute('data-theme',theme);else r.removeAttribute('data-theme');
+    LS.set('tjkt_pc_tema',theme);
+  },[theme]);
+  useEffect(function(){PWA.on(function(){tick(function(x){return x+1})});PWA.setupManifest();PWA.registerSW()},[]);
+
+  var dark=theme?theme==='dark':(window.matchMedia&&matchMedia('(prefers-color-scheme: dark)').matches);
+  var installed=PWA.installed||PWA.standalone();
+  var online=navigator.onLine;
+  function doInstall(){
+    if(PWA.deferred)PWA.promptInstall().then(function(o){if(o==='manual')setInstOpen(true)});
+    else setInstOpen(true);
+  }
+  var totalSteps=SOP.reduce(function(a,b){return a+b.steps.length},0);
+  var doneSteps=Object.keys(prog.sop||{}).filter(function(k){return prog.sop[k]}).length;
+  var pct=Math.round(((prog.dibaca||[]).length+doneSteps)/(HW.length+totalSteps)*100);
+
+  return html`<div>
+    <header className="hdr"><div className="hdr-in">
+      <div className="brand"><div className="logo"><${Icon} n="cpu" s=${22}/></div>
+        <div style=${{minWidth:0}}><h1>PerakitPC TJKT</h1><small>Simulasi perakitan PC dan pengenalan komponen. Progres belajar ${pct}%</small></div></div>
+      <div className="hdr-act">
+        <span className=${'pill '+(online?'ok':'warn')}><${Icon} n=${online?'wifi':'wifioff'} s=${14}/> ${online?'Online':'Offline'}</span>
+        ${installed?html`<span className="pill acc"><${Icon} n="check" s=${14}/> Terpasang</span>`:html`<button className="btn pri" onClick=${doInstall}><${Icon} n="download" s=${17}/> Install Aplikasi (Offline)</button>`}
+        <button className="btn" onClick=${function(){setTheme(dark?'light':'dark')}} aria-label=${dark?'Tema terang':'Tema gelap'}><${Icon} n=${dark?'sun':'moon'} s=${18}/></button>
+      </div>
+    </div></header>
+    <div className="wrap">
+      <div className="tabs" role="tablist">
+        <button className="tab" role="tab" aria-selected=${tab==='materi'} onClick=${function(){setTab('materi')}}><${Icon} n="book" s=${19}/> Materi Pembelajaran</button>
+        <button className="tab" role="tab" aria-selected=${tab==='sim'} onClick=${function(){setTab('sim')}}><${Icon} n="wrench" s=${19}/> Simulasi Perakitan</button>
+      </div>
+      <main className="main" role="tabpanel">
+        ${tab==='materi'?html`<${Materi} prog=${prog} setProg=${setProg}/>`:html`<${Sim} dark=${dark} profile=${profile} setProfile=${setProfile} history=${history} setHistory=${setHistory}/>`}
+      </main>
+      <div className="foot">Dibuat untuk siswa SMK TJKT. Data progres dan riwayat hanya tersimpan di perangkat ini. Versi 4.2 (rak 2: hanya kepala kabel).</div>
+    </div>
+    ${instOpen?html`<${InstallModal} onClose=${function(){setInstOpen(false)}}/>`:null}
+  </div>`;
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(React.createElement(App));
+})();
+</script>
+
+</body>
+</html>
